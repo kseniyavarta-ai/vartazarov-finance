@@ -306,6 +306,22 @@
     <div id="recent-log" style="font-size:13px;color:var(--muted)">Nothing logged yet this session.</div>
   </div>
 
+
+  <!-- INVESTMENT ACTUALS -->
+  <div class="section-label" style="margin-top:28px">📈 Investments — what actually went in</div>
+  <div class="card">
+    <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Once a month, enter what really went into each account. 🎯 The Plan uses these instead of the planned amounts for that month and recalculates.</div>
+    <div style="margin-bottom:12px"><label style="font-size:13px">Month <input type="month" id="iv-month" style="padding:8px;border:2px solid var(--border);border-radius:8px;font-family:inherit" onchange="fillInvForm()"></label></div>
+    <div class="grid-2" style="gap:10px">
+      <label style="font-size:13px">Kseniya RRSP<br>$<input type="number" id="iv-k_rrsp" min="0" step="50" style="width:120px"></label>
+      <label style="font-size:13px">Artemii RRSP<br>$<input type="number" id="iv-a_rrsp" min="0" step="50" style="width:120px"></label>
+      <label style="font-size:13px">Kseniya TFSA<br>$<input type="number" id="iv-k_tfsa" min="0" step="50" style="width:120px"></label>
+      <label style="font-size:13px">Artemii TFSA<br>$<input type="number" id="iv-a_tfsa" min="0" step="50" style="width:120px"></label>
+    </div>
+    <button onclick="saveInvestment()" style="width:100%;padding:14px;margin-top:14px;background:var(--blue);color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer">💾 Save investments for this month</button>
+    <div id="iv-status" style="text-align:center;font-size:13px;min-height:20px;margin-top:8px"></div>
+    <div id="iv-list" style="font-size:13px;margin-top:6px"></div>
+  </div>
 </div>
 </div>
 <!-- ========== END LOGGER TAB ========== -->
@@ -316,87 +332,82 @@
 
   <div style="background:var(--accent);color:white;border-radius:var(--radius);padding:22px;margin-bottom:20px">
     <div style="font-size:11px;opacity:.75;text-transform:uppercase;letter-spacing:.8px">The goal</div>
-    <div style="font-size:22px;font-weight:700;margin:4px 0 16px">Retire at 65 with $12,000/mo ✅</div>
+    <div style="font-size:22px;font-weight:700;margin:4px 0 16px" id="pl-goal">Retire at 65 with $12,000/mo</div>
     <div class="grid-2" style="gap:12px">
       <div style="background:rgba(255,255,255,.12);border-radius:10px;padding:14px">
         <div style="font-size:12px;opacity:.85">2048 · Artemii turns 65</div>
-        <div style="font-size:30px;font-weight:700;margin:2px 0">$8.81M</div>
-        <div style="font-size:14px">≈ <strong>$5.09M</strong> today · ~$14,900/mo</div>
+        <div style="font-size:30px;font-weight:700;margin:2px 0" id="pl-48">—</div>
+        <div style="font-size:14px" id="pl-48s"></div>
       </div>
       <div style="background:rgba(255,255,255,.12);border-radius:10px;padding:14px">
         <div style="font-size:12px;opacity:.85">2052 · Kseniya turns 65</div>
-        <div style="font-size:30px;font-weight:700;margin:2px 0">$12.01M</div>
-        <div style="font-size:14px">≈ <strong>$6.29M</strong> today · ~$18,400/mo</div>
+        <div style="font-size:30px;font-weight:700;margin:2px 0" id="pl-52">—</div>
+        <div style="font-size:14px" id="pl-52s"></div>
       </div>
     </div>
-    <div style="font-size:11px;opacity:.75;margin-top:12px;line-height:1.5">One household pot at two dates — not added together. Monthly income = 3.5% of the pot, in today's money, before tax. Goal is covered from ~2046.<br>+ CPP &amp; OAS from 65, not included: est. ~$2,981/mo combined today (~$1,490 each). OAS can be reduced if retirement income is high.</div>
+    <div style="font-size:11px;opacity:.75;margin-top:12px;line-height:1.5"><span id="pl-goalnote"></span> One household pot at two dates — not added together. Monthly income = 3.5% of the pot, in today's money, before tax.<br>+ CPP &amp; OAS from 65, not included: est. ~$2,981/mo combined today (~$1,490 each). OAS can be reduced if retirement income is high.</div>
   </div>
 
   <div class="card">
-    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:6px"><div style="width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">1</div><div><div class="card-title" style="margin-bottom:2px">Set up in November — automatic, monthly</div><div style="font-size:13px;color:var(--muted)">Wealthsimple → each account → Auto-deposit</div></div></div>
+    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:6px"><div style="width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">1</div><div><div class="card-title" style="margin-bottom:2px">What we invest every month</div><div style="font-size:13px;color:var(--muted)">Change any amount — the whole plan recalculates and is saved for both of you.</div></div></div>
     <table class="budget-table" style="margin-top:10px"><tbody>
-      <tr><td>Kseniya → RRSP <span style="font-size:11px;color:var(--muted)">$2,818 normal + $182 catch-up</span></td><td class="mono" style="text-align:right"><strong>$3,000</strong></td></tr>
-      <tr><td>Artemii → RRSP <span style="font-size:11px;color:var(--warn)">$2,475 normal + $1,083 catch-up, through 2030</span></td><td class="mono" style="text-align:right"><strong>$3,558</strong></td></tr>
-      <tr><td>Kseniya → TFSA</td><td class="mono" style="text-align:right">$693</td></tr>
-      <tr><td>Artemii → TFSA <span style="font-size:11px;color:var(--muted)">paused while he catches up · $1,083/mo from 2031</span></td><td class="mono" style="text-align:right">$0</td></tr>
+      <tr><td>Kseniya → RRSP<br><span style="font-size:11px;color:var(--muted)" id="in-k_rrsp-sub"></span></td><td style="text-align:right;white-space:nowrap">$<input type="number" id="in-k_rrsp" min="0" step="50" style="width:96px;text-align:right" oninput="onPlanInput()"></td></tr>
+      <tr><td>Artemii → RRSP<br><span style="font-size:11px;color:var(--muted)" id="in-a_rrsp-sub"></span></td><td style="text-align:right;white-space:nowrap">$<input type="number" id="in-a_rrsp" min="0" step="50" style="width:96px;text-align:right" oninput="onPlanInput()"></td></tr>
+      <tr><td>Kseniya → TFSA<br><span style="font-size:11px;color:var(--muted)" id="in-k_tfsa-sub"></span></td><td style="text-align:right;white-space:nowrap">$<input type="number" id="in-k_tfsa" min="0" step="50" style="width:96px;text-align:right" oninput="onPlanInput()"></td></tr>
+      <tr><td>Artemii → TFSA<br><span style="font-size:11px;color:var(--muted)" id="in-a_tfsa-sub"></span></td><td style="text-align:right;white-space:nowrap">$<input type="number" id="in-a_tfsa" min="0" step="50" style="width:96px;text-align:right" oninput="onPlanInput()"></td></tr>
       <tr><td>Margo → RESP <span style="font-size:11px;color:var(--muted)">already running at RBC</span></td><td class="mono" style="text-align:right">$210</td></tr>
-      <tr style="background:var(--blue-bg)"><td><strong>Total set aside</strong></td><td class="mono" style="text-align:right"><strong>$7,461/mo</strong></td></tr>
-      <tr><td style="color:var(--muted)">Left over from the ~$9,640 surplus</td><td class="mono" style="text-align:right;color:var(--muted)">~$2,200/mo breathing room</td></tr>
+      <tr style="background:var(--blue-bg)"><td><strong>Total set aside</strong></td><td class="mono" style="text-align:right"><strong id="pl-total">—</strong></td></tr>
+      <tr><td style="color:var(--muted)" id="pl-surplus-lbl">Left over</td><td class="mono" style="text-align:right" id="pl-breath">—</td></tr>
     </tbody></table>
-    <div style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.6">Why Artemii's TFSA pauses: his unused RRSP room gets back ~37¢ per $1 now; TFSA room never expires, so it waits. The extra $500/mo comes from the trimmed budget (step 3). Assumes ~$52K of unused RRSP room for Artemii — <strong>check CRA</strong>: if he has more, keep the $3,558 going longer.</div>
+    <div id="pl-warn" style="font-size:12px;margin-top:8px;line-height:1.6"></div>
+    <details style="margin-top:10px;font-size:13px">
+      <summary style="cursor:pointer;color:var(--muted)">Unused RRSP room (from CRA My Account)</summary>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px">
+        <label>Kseniya $<input type="number" id="in-k_room" step="100" style="width:100px" oninput="onPlanInput()"></label>
+        <label>Artemii $<input type="number" id="in-a_room" step="100" style="width:100px" oninput="onPlanInput()"></label>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px">New room each January: Kseniya ~$33,810, Artemii ~$29,700 (18% of $165K). If an amount would go over the room, the model moves the extra to that person's TFSA.</div>
+    </details>
+    <div style="display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap">
+      <button onclick="resetPlanDefaults()" class="scenario-btn">↺ Reset to defaults</button>
+      <span id="pl-sync" style="font-size:12px;color:var(--muted)"></span>
+    </div>
+    <div id="pl-actuals" style="font-size:12px;color:var(--muted);margin-top:8px"></div>
   </div>
 
   <div class="card">
-    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:6px"><div style="width:30px;height:30px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">2</div><div><div class="card-title" style="margin-bottom:2px">Every spring — CRA refund ≈ $30,700</div><div style="font-size:13px;color:var(--muted)">Kseniya ~$15,100 + Artemii ~$15,600 while he catches up (drops to ~$10,900 from 2031 → ~$26,000 total). First one, spring 2028: ~$35,700.</div></div></div>
+    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:6px"><div style="width:30px;height:30px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">2</div><div><div class="card-title" style="margin-bottom:2px" id="pl-ref-title">Every spring — CRA refund</div><div style="font-size:13px;color:var(--muted)" id="pl-ref-sub"></div></div></div>
     <table class="budget-table" style="margin-top:10px">
       <thead><tr><th>Spring</th><th>Refund goes to</th><th>Result</th></tr></thead>
-      <tbody>
-        <tr><td class="mono">2028</td><td>🛟 Emergency fund</td><td>~$35,700 saved</td></tr>
-        <tr><td class="mono">2029</td><td>🛟 Emergency fund → 🏠 mortgage</td><td>Fund full at <strong>$45K</strong></td></tr>
-        <tr><td class="mono">2030–36</td><td>🏠 Mortgage lump sum</td><td><strong>Mortgage gone Apr 2036</strong> (5½ yrs early, ~$92K interest saved)</td></tr>
-        <tr><td class="mono">2037+</td><td>📈 TFSA / investments</td><td>Plus invest the $4,332/mo you no longer pay on the mortgage</td></tr>
-      </tbody>
+      <tbody id="pl-ref-rows"></tbody>
     </table>
-    <div style="font-size:12px;color:var(--muted);margin-top:8px">A ~$31K refund is well under the mortgage's 20%-a-year prepayment privilege (resets Dec 15).</div>
+    <div style="font-size:12px;color:var(--muted);margin-top:8px">A refund this size is well under the mortgage's 20%-a-year prepayment privilege (resets Dec 15).</div>
   </div>
 
   <div class="card">
-    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:6px"><div style="width:30px;height:30px;border-radius:50%;background:var(--warn);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">3</div><div><div class="card-title" style="margin-bottom:2px">Trim the budget by ~$500/mo</div><div style="font-size:13px;color:var(--muted)">Already updated in 📊 This Month. This is what funds Artemii's catch-up.</div></div></div>
-    <table class="budget-table" style="margin-top:10px">
-      <thead><tr><th>Category</th><th style="text-align:right">Was → Now</th></tr></thead>
-      <tbody>
-        <tr><td>Fashion &amp; Beauty</td><td class="mono" style="text-align:right">$500 → $350</td></tr>
-        <tr><td>Gifts</td><td class="mono" style="text-align:right">$400 → $300</td></tr>
-        <tr><td>Dining Out &amp; Coffee</td><td class="mono" style="text-align:right">$280 → $220</td></tr>
-        <tr><td>Amazon / Online</td><td class="mono" style="text-align:right">$300 → $250</td></tr>
-        <tr><td>Entertainment</td><td class="mono" style="text-align:right">$150 → $100</td></tr>
-        <tr><td>Misc / Other</td><td class="mono" style="text-align:right">$200 → $150</td></tr>
-        <tr><td>Nespresso</td><td class="mono" style="text-align:right">$90 → $60</td></tr>
-        <tr style="background:var(--blue-bg)"><td><strong>Saved</strong></td><td class="mono" style="text-align:right"><strong>$490/mo</strong></td></tr>
-      </tbody>
-    </table>
+    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:6px"><div style="width:30px;height:30px;border-radius:50%;background:var(--warn);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">3</div><div><div class="card-title" style="margin-bottom:2px">Budget trimmed by ~$490/mo</div><div style="font-size:13px;color:var(--muted)">Already in 📊 This Month: Fashion $350, Gifts $300, Dining $220, Amazon $250, Entertainment $100, Misc $150, Nespresso $60.</div></div></div>
   </div>
 
   <div class="card">
     <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:6px"><div style="width:30px;height:30px;border-radius:50%;background:var(--purple);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">4</div><div><div class="card-title" style="margin-bottom:2px">When money frees up — do more</div></div></div>
     <div style="font-size:14px;line-height:1.8;margin-top:6px">
-      📈 <strong>Every raise:</strong> half of the extra take-home → Artemii's RRSP (while he has room), then TFSAs. The other half is yours to enjoy.<br>
-      🚗 <strong>Feb 2029 — Mazda lease ends:</strong> $959/mo freed → RRSP catch-up / TFSA (unless you replace the car).<br>
-      🎁 <strong>Kseniya's bonus:</strong> straight into her RRSP catch-up room ($74,654 available).<br>
-      <span style="font-size:12px;color:var(--muted)">None of these are in the numbers above — each one moves you ahead.</span>
+      📈 <strong>Every raise:</strong> half of the extra take-home → Artemii's RRSP (while he has room), then TFSAs. Update step 1 above.<br>
+      🚗 <strong>Feb 2029 — Mazda lease ends:</strong> $959/mo freed → RRSP catch-up / TFSA.<br>
+      🎁 <strong>Kseniya's bonus:</strong> straight into her RRSP catch-up room.
     </div>
   </div>
 
   <div class="card">
-    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:6px"><div style="width:30px;height:30px;border-radius:50%;background:var(--muted);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">5</div><div><div class="card-title" style="margin-bottom:2px">Once a year — 15 minutes</div></div></div>
+    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:6px"><div style="width:30px;height:30px;border-radius:50%;background:var(--muted);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">5</div><div><div class="card-title" style="margin-bottom:2px">Every month &amp; once a year</div></div></div>
     <div style="font-size:14px;line-height:1.9;margin-top:6px">
-      ☐ <strong>Feb:</strong> check RRSP + TFSA room on CRA My Account (both) — adjust Artemii's catch-up<br>
+      ☐ <strong>Monthly:</strong> log what actually went into RRSP/TFSA (📝 Log tab → Investments)<br>
+      ☐ <strong>Feb:</strong> check RRSP + TFSA room on CRA My Account → update the room above<br>
       ☐ <strong>Apr:</strong> file taxes → move the refund the same day it lands<br>
       ☐ <strong>Jun 2028:</strong> start shopping the mortgage renewal (due Dec 2028)
     </div>
   </div>
 
-  <details class="card" style="cursor:pointer" ontoggle="if(this.open) updateRetirement()">
+  <details class="card" style="cursor:pointer" ontoggle="if(this.open) drawRetChart()">
     <summary style="font-weight:600;font-size:15px">📈 Details — chart, other retirement years, assumptions</summary>
     <div style="cursor:default;margin-top:16px">
       <div style="height:280px"><canvas id="retChart"></canvas></div>
@@ -406,18 +417,10 @@
         <span><span class="legend-dot" style="background:#d4d0c8"></span> Stop contributing today</span>
       </div>
       <div class="section-label">If you retire earlier or later</div>
-      <table class="compare-table">
-        <tr><th>Retire</th><th>Pot</th><th>Today's $</th><th>Per mo</th></tr>
-        <tr><td><strong>2043</strong><br><span style="font-size:11px;color:var(--muted)">Both stop at 56 / 60</span></td><td class="mono">$5.52M</td><td class="mono">$3.61M</td><td class="mono">$10,500</td></tr><tr><td><strong>2046</strong><br><span style="font-size:11px;color:var(--muted)">Goal first covered</span></td><td class="mono">$7.35M</td><td class="mono">$4.47M</td><td class="mono">$13,000</td></tr><tr><td><strong>2048</strong><br><span style="font-size:11px;color:var(--muted)">Artemii turns 65</span></td><td class="mono">$8.81M</td><td class="mono">$5.09M</td><td class="mono">$14,900</td></tr><tr class="highlight"><td><strong>2052</strong><br><span style="font-size:11px;color:var(--muted)">Kseniya turns 65</span></td><td class="mono">$12.01M</td><td class="mono">$6.29M</td><td class="mono">$18,400</td></tr>
-      </table>
+      <table class="compare-table" id="pl-years"></table>
       <div class="section-label">Where the money sits</div>
-      <table class="compare-table">
-        <tr><th>Account</th><th>2048</th><th>2052</th></tr>
-        <tr><td>Kseniya RRSP</td><td class="mono">$3.20M</td><td class="mono">$4.39M</td></tr><tr><td>Kseniya TFSA</td><td class="mono">$0.92M</td><td class="mono">$1.25M</td></tr><tr><td>Artemii RRSP</td><td class="mono">$2.45M</td><td class="mono">$3.24M</td></tr><tr><td>Artemii TFSA</td><td class="mono">$0.67M</td><td class="mono">$0.89M</td></tr><tr><td>Non-registered</td><td class="mono">$1.57M</td><td class="mono">$2.24M</td></tr>
-      </table>
-      <div style="font-size:12px;color:var(--muted);margin-top:14px;line-height:1.6">
-        <strong>Assumptions:</strong> 7%/yr return (before Wealthsimple fees, ~0.5%), 2.5% inflation, salaries stay flat (no raises), mortgage stays at 5.56%, emergency fund in 3% savings. Artemii at $165K with ~$52K unused RRSP room (catch-up 2026–2030). Refunds use 2026 Alberta + federal tax brackets, salary only, no bonus. About two-thirds of the pot is RRSP, which is taxed when withdrawn; TFSA is tax-free. Spending the refunds instead would leave ~$10.47M in 2052 instead of $12.01M.
-      </div>
+      <table class="compare-table" id="pl-acc"></table>
+      <div style="font-size:12px;color:var(--muted);margin-top:14px;line-height:1.6" id="pl-assump"></div>
     </div>
   </details>
 
@@ -511,13 +514,13 @@
         <div class="section-label">Artemii — $165K salary (38% marginal)</div>
         <div class="budget-row"><span class="budget-cat">RRSP room (est.)</span><span class="budget-budget mono">~$29,700/yr + ~$52K catch-up (confirm)</span></div>
         <div class="budget-row"><span class="budget-cat">Tax refund per $1K</span><span class="budget-budget mono">~$370 back</span></div>
-        <div class="budget-row"><span class="budget-cat">Refund (plan $3,558/mo)</span><span class="budget-budget mono">~$15,600 → ~$10,900 from 2031</span></div>
+        <div class="budget-row"><span class="budget-cat">Refund (plan $3,000/mo)</span><span class="budget-budget mono">~$13,200/yr</span></div>
         <div class="budget-row"><span class="budget-cat">Current RRSP</span><span class="budget-budget mono">$141,000</span></div>
         <div class="budget-row"><span class="budget-cat">Current TFSA</span><span class="budget-budget mono">$44,000</span></div>
       </div>
     </div>
     <div class="banner banner-purple" style="margin-top:14px">
-      🧩 <strong>Priority order:</strong> ① Max both RRSPs — 42% / ~37% instant return. ② TFSA next for tax-free growth + flexibility. ③ Any remainder to WS non-registered. Plan: ~$78,700/yr into RRSPs = ~$30,700 back each spring (~$26,000 after Artemii's catch-up).
+      🧩 <strong>Priority order:</strong> ① Max both RRSPs — 42% / ~37% instant return. ② TFSA next for tax-free growth + flexibility. ③ Any remainder to WS non-registered. Default plan: $72,000/yr into RRSPs = ~$28,300 back each spring (live numbers in 🎯 The Plan).
     </div>
   </div>
 
@@ -580,7 +583,7 @@
       <div class="action-num warn">3</div>
       <div>
         <div class="action-title">Start Artemii's RRSP contribution plan for November</div>
-        <div class="action-desc">Set up $3,558/mo ($2,475 normal + $1,083 catch-up) from Day 1 of new job — first check his unused room on CRA. ~$15,600 refund/yr while catching up. See 🎯 The Plan tab.</div>
+        <div class="action-desc">Set up $3,000/mo ($2,475 normal + $525 catch-up) from Day 1 of new job — first check his unused room on CRA. ~$13,200 refund/yr. See 🎯 The Plan tab.</div>
       </div>
     </div>
   </div>
@@ -590,8 +593,8 @@
     <div class="action-item">
       <div class="action-num">4</div>
       <div>
-        <div class="action-title">Set up auto-invest: RRSP $3,000 Kseniya + $3,558 Artemii, TFSA $693 Kseniya = $7,251/mo</div>
-        <div class="action-desc">~$78,700/yr into RRSPs → ~$30,700 refund each spring. Refunds go to the $45K emergency fund first (full April 2029), then to the mortgage. See 🎯 The Plan tab.</div>
+        <div class="action-title">Set up auto-invest: RRSP $3,000 each, TFSA $693 Kseniya + $583 Artemii = $7,276/mo</div>
+        <div class="action-desc">$72,000/yr into RRSPs → ~$28,300 refund each spring. Refunds go to the $45K emergency fund first (full April 2029), then to the mortgage. See 🎯 The Plan tab.</div>
       </div>
     </div>
     <div class="action-item">
@@ -956,7 +959,7 @@ function showTab(id, el) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById('tab-'+id).classList.add('active');
   el.classList.add('active');
-  if(id==='logger') { buildCatGrid(); initLoggerDate(); }
+  if(id==='logger') { buildCatGrid(); initLoggerDate(); fillInvForm(); }
   if(id==='retirement') { updateRetirement(); }
   if(id==='scenarios') { buildScenarioChart(); updateMazdaCalc(); }
 }
@@ -1051,26 +1054,176 @@ function updateTotals() {
   document.getElementById('savings-total-display').textContent = '$'+savings.toLocaleString()+'/mo';
 }
 
-// ============ RETIREMENT (retire-at-65 plan) ============
-// Year-end portfolio values (nominal) from the monthly model, 2026..2052
-const PLAN = [583215, 715234, 856797, 1008594, 1171364, 1345901, 1533055, 1733738, 1948929, 2179675, 2470304, 2819692, 3194338, 3596066, 4026836, 4488746, 4984048, 5515155, 6084656, 6695326, 7350141, 8052293, 8805204, 9533354, 10302716, 11127695, 12012312];
-const PLAN_SPEND = [583215, 715234, 856797, 1008594, 1171364, 1345901, 1533055, 1733738, 1948929, 2179675, 2427103, 2692417, 2976911, 3281971, 3609083, 3959843, 4385709, 4846296, 5340178, 5869763, 6437632, 7046553, 7699492, 8320443, 8986284, 9700258, 10465845];
-const PLAN_COAST = [568671, 609780, 653861, 701129, 751814, 806162, 864440, 926930, 993938, 1065790, 1142836, 1225452, 1314040, 1409032, 1510891, 1620113, 1737231, 1862816, 1997479, 2141877, 2296713, 2462743, 2640775, 2831676, 3036379, 3255879, 3491246];
-const INFL = 0.025;
-let retChart = null;
+// ============ RETIREMENT ENGINE (monthly model, Nov 2026 → Dec 2052) ============
+const ENG = {
+  start: { K_RRSP:275503, K_TFSA:101591, A_RRSP:141000, A_TFSA:44000 },
+  salaryK: 233000, salaryA: 165000,
+  newRoomK: 33810, newRoomA: 29700,     // yearly new RRSP room
+  mortgage: 533446, mortRate: 0.0556, mortPay: 4332,
+  efTarget: 45000, ret: 0.07, hisa: 0.03, infl: 0.025,
+  kLastYear: 2052, aLastYear: 2048,
+};
+const FED=[[0,.14],[58523,.205],[117045,.26],[181440,.29],[258482,.33]];
+const AB =[[0,.08],[61200,.10],[154259,.12],[185111,.13],[246817,.14],[370220,.15]];
+function taxOn(inc,br){ let t=0; for(let i=0;i<br.length;i++){ const lo=br[i][0], hi=i+1<br.length?br[i+1][0]:1e12; if(inc>lo) t+=(Math.min(inc,hi)-lo)*br[i][1]; } return t; }
+function taxSaving(inc,ded){ if(ded<=0) return 0; return taxOn(inc,FED)+taxOn(inc,AB)-taxOn(inc-ded,FED)-taxOn(inc-ded,AB); }
+function ymKey(y,m){ return y+'-'+String(m).padStart(2,'0'); }
 
-function proj(base, monthly, years) {
-  const r = 0.07/12;
-  let v = base;
-  for(let m=0; m<years*12; m++) v = v*(1+r)+monthly;
-  return Math.round(v);
+function runPlan(S, actuals, opt) {
+  opt = opt || {};
+  const r=ENG.ret/12, h=ENG.hisa/12, mr=ENG.mortRate/12;
+  let KR=ENG.start.K_RRSP, KT=ENG.start.K_TFSA, AR=ENG.start.A_RRSP, AT=ENG.start.A_TFSA, NR=0, EF=0;
+  let bal=ENG.mortgage, interest=0, kRoom=S.k_room, aRoom=S.a_room;
+  const Kc={}, Ac={}, years={}, refunds={}, ev={};
+  let y=2026, m=11;
+  while (y<2052 || (y===2052 && m<=12)) {
+    KR*=1+r; KT*=1+r; AR*=1+r; AT*=1+r; NR*=1+r; EF*=1+h;
+    if (m===1 && y>2026) { if (y<=ENG.kLastYear) kRoom+=ENG.newRoomK; if (y<=ENG.aLastYear) aRoom+=ENG.newRoomA; }
+    const key=ymKey(y,m), act=actuals && actuals[key];
+    const kOn = y<=ENG.kLastYear, aOn = y<=ENG.aLastYear;
+    const c = act ? act : { k_rrsp:kOn?S.k_rrsp:0, a_rrsp:aOn?S.a_rrsp:0, k_tfsa:kOn?S.k_tfsa:0, a_tfsa:aOn?S.a_tfsa:0 };
+    // RRSP capped at available room; anything above goes to that person's TFSA
+    const kr=Math.min(c.k_rrsp, Math.max(kRoom,0)), ar=Math.min(c.a_rrsp, Math.max(aRoom,0));
+    if (!act && c.k_rrsp>kr && !ev.kRoomOut) ev.kRoomOut=[y,m];
+    if (!act && c.a_rrsp>ar && !ev.aRoomOut) ev.aRoomOut=[y,m];
+    if (act && (c.k_rrsp>kr || c.a_rrsp>ar)) ev.overContrib=key;
+    kRoom-=kr; aRoom-=ar;
+    KR+=kr; KT+=c.k_tfsa+(c.k_rrsp-kr); AR+=ar; AT+=c.a_tfsa+(c.a_rrsp-ar);
+    Kc[y]=(Kc[y]||0)+kr; Ac[y]=(Ac[y]||0)+ar;
+    // catch-up = contributing more than the normal yearly room
+    if (!act && !ev.aCatchupEnd && S.a_rrsp*12>ENG.newRoomA && aRoom<=0) ev.aCatchupEnd=[y,m];
+    // mortgage
+    if (bal>0) { const i=bal*mr; interest+=i; bal+=i-ENG.mortPay; if (bal<=0){ NR+=-bal; bal=0; ev.mortPaid=ev.mortPaid||[y,m]; } }
+    else NR += y<=ENG.aLastYear ? ENG.mortPay : 1500;
+    // spring refund for last tax year (2026 contributions claimed with 2027)
+    if (m===4 && y>=2028) {
+      const ty=y-1;
+      const kd=(Kc[ty]||0)+(ty===2027?(Kc[2026]||0):0), ad=(Ac[ty]||0)+(ty===2027?(Ac[2026]||0):0);
+      let R=taxSaving(ENG.salaryK,kd)+taxSaving(ENG.salaryA,ad);
+      refunds[y]=R;
+      if (opt.spendRefunds) R=0;
+      if (EF<ENG.efTarget && R>0) { const t=Math.min(R,ENG.efTarget-EF); EF+=t; R-=t; if (EF>=ENG.efTarget-1) ev.efFull=ev.efFull||[y,m]; }
+      if (bal>0 && R>0) { const t=Math.min(R,bal); bal-=t; R-=t; if (bal<=0) ev.mortPaid=ev.mortPaid||[y,m]; }
+      NR+=R;
+    }
+    if (m===12) years[y]={K_RRSP:KR,K_TFSA:KT,A_RRSP:AR,A_TFSA:AT,NonReg:NR,EF:EF,total:KR+KT+AR+AT+NR};
+    m++; if (m===13){ m=1; y++; }
+  }
+  return { years, refunds, ev, interest, kRoomLeft:kRoom, aRoomLeft:aRoom };
+}
+function todaysMoney(v,yr){ return v/Math.pow(1+ENG.infl, yr+1-2026.83); }
+
+// ============ PLAN STATE (shared via Google Sheet, cached locally) ============
+const PLAN_DEFAULTS = { k_rrsp:3000, a_rrsp:3000, k_tfsa:693, a_tfsa:583, k_room:74654, a_room:52000 };
+let planS = Object.assign({}, PLAN_DEFAULTS), planTs = 0;
+let invActuals = {};          // { 'YYYY-MM': {k_rrsp,a_rrsp,k_tfsa,a_tfsa} }
+let lastRun = null, lastSpend = null, retChart = null, saveTimer = null;
+const LS_PLAN='vf_plan_v1', LS_INV='vf_inv_v1';
+try { const d=JSON.parse(localStorage.getItem(LS_PLAN)||'null'); if(d&&d.s){ planS=Object.assign({},PLAN_DEFAULTS,d.s); planTs=d.ts||0; } } catch(e){}
+try { invActuals=JSON.parse(localStorage.getItem(LS_INV)||'{}')||{}; } catch(e){}
+
+const $m = v => '$'+(v/1e6).toFixed(2)+'M';
+const $n = v => '$'+Math.round(v).toLocaleString();
+const $r = v => '$'+(Math.round(v/100)*100).toLocaleString();
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const ymTxt = a => a ? MON[a[1]-1]+' '+a[0] : null;
+
+function fillPlanInputs() {
+  ['k_rrsp','a_rrsp','k_tfsa','a_tfsa','k_room','a_room'].forEach(k => { const el=document.getElementById('in-'+k); if(el && document.activeElement!==el) el.value=planS[k]; });
+}
+function onPlanInput() {
+  ['k_rrsp','a_rrsp','k_tfsa','a_tfsa','k_room','a_room'].forEach(k => { const v=parseFloat(document.getElementById('in-'+k).value); planS[k]=isNaN(v)?0:Math.max(0,v); });
+  planTs = Date.now();
+  try { localStorage.setItem(LS_PLAN, JSON.stringify({s:planS, ts:planTs})); } catch(e){}
+  renderPlan();
+  clearTimeout(saveTimer);
+  document.getElementById('pl-sync').textContent = 'Saving…';
+  saveTimer = setTimeout(pushPlanSettings, 1500);
+}
+function resetPlanDefaults(){ planS=Object.assign({},PLAN_DEFAULTS); fillPlanInputs(); onPlanInput(); }
+function pushPlanSettings() {
+  fetch(SHEET_ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'settings',settings:Object.assign({ts:planTs},planS)})})
+    .then(()=>{ document.getElementById('pl-sync').textContent='✓ Saved for both of you'; })
+    .catch(()=>{ document.getElementById('pl-sync').textContent='Saved on this device only (offline)'; });
+}
+function loadShared() {
+  fetch(SHEET_ENDPOINT).then(r=>r.json()).then(d=>{
+    if (d && d.settings && (d.settings.ts||0) > planTs) {
+      planS = Object.assign({}, PLAN_DEFAULTS, d.settings); planTs = d.settings.ts||0;
+      try { localStorage.setItem(LS_PLAN, JSON.stringify({s:planS, ts:planTs})); } catch(e){}
+    }
+    if (d && d.investments) { invActuals = Object.assign({}, invActuals, d.investments); try { localStorage.setItem(LS_INV, JSON.stringify(invActuals)); } catch(e){} }
+    fillPlanInputs(); renderPlan(); renderInvList();
+  }).catch(()=>{});
 }
 
-function updateRetirement() {
+function householdSurplus() {
+  let total=0;
+  [...fixedCats,...varCats,...otherCats].forEach(c=>{ if(c.tag==='mazda'&&!carState.mazda) return; if(c.tag==='tesla'&&!carState.tesla) return; total+=c.budget; });
+  return INCOME_BOTH_NET - total;
+}
+
+function renderPlan() {
+  const S = planS;
+  lastRun = runPlan(S, invActuals);
+  lastSpend = runPlan(S, invActuals, {spendRefunds:true});
+  const Y = lastRun.years, ev = lastRun.ev, R = lastRun.refunds;
+  const inc = y => todaysMoney(Y[y].total,y)*0.035/12;
+  // hero
+  document.getElementById('pl-48').textContent = $m(Y[2048].total);
+  document.getElementById('pl-48s').innerHTML = `≈ <strong>${$m(todaysMoney(Y[2048].total,2048))}</strong> today · ~${$r(inc(2048))}/mo`;
+  document.getElementById('pl-52').textContent = $m(Y[2052].total);
+  document.getElementById('pl-52s').innerHTML = `≈ <strong>${$m(todaysMoney(Y[2052].total,2052))}</strong> today · ~${$r(inc(2052))}/mo`;
+  let goalYear=null; for(let y=2027;y<=2052;y++){ if(inc(y)>=12000){goalYear=y;break;} }
+  document.getElementById('pl-goal').textContent = 'Retire at 65 with $12,000/mo ' + (inc(2052)>=12000?'✅':'⚠️');
+  document.getElementById('pl-goalnote').textContent = goalYear ? `Goal is covered from ~${goalYear}.` : 'Goal not reached by 2052 at these amounts.';
+  // step 1 totals
+  const total = S.k_rrsp+S.a_rrsp+S.k_tfsa+S.a_tfsa+210, surplus = householdSurplus(), left = surplus-total;
+  document.getElementById('pl-total').textContent = $n(total)+'/mo';
+  document.getElementById('pl-surplus-lbl').textContent = `Left over from the ~${$n(surplus)} surplus`;
+  const b = document.getElementById('pl-breath');
+  b.textContent = (left>=0?'~'+$n(left):'−'+$n(-left))+'/mo'; b.style.color = left>=0?'var(--muted)':'var(--danger)';
+  const sub=(id,t)=>{ const e=document.getElementById(id+'-sub'); if(e) e.innerHTML=t; };
+  const kx=S.k_rrsp-ENG.newRoomK/12, ax=S.a_rrsp-ENG.newRoomA/12;
+  sub('in-k_rrsp', kx>0 ? `$2,818 normal + $${Math.round(kx).toLocaleString()} catch-up · refund ~42¢ per $1` : 'within normal yearly room · refund ~42¢ per $1');
+  sub('in-a_rrsp', ax>0 ? `$2,475 normal + $${Math.round(ax).toLocaleString()} catch-up · refund ~37¢ per $1` : 'within normal yearly room · refund ~37¢ per $1');
+  sub('in-k_tfsa','tax-free growth'); sub('in-a_tfsa', S.a_tfsa===0?'paused':'tax-free growth');
+  const w=[];
+  if (left<0) w.push(`<span style="color:var(--danger)">⚠️ That's ${$n(-left)}/mo more than your surplus — trim the budget or lower an amount.</span>`);
+  if (ev.aRoomOut) w.push(`<span style="color:var(--warn)">Artemii's RRSP room runs out ~${ymTxt(ev.aRoomOut)} — then drop him to $2,475/mo (extra goes to his TFSA in the model).</span>`);
+  if (ev.kRoomOut) w.push(`<span style="color:var(--warn)">Kseniya's RRSP room runs out ~${ymTxt(ev.kRoomOut)} — then drop to $2,818/mo.</span>`);
+  if (ev.overContrib) w.push(`<span style="color:var(--danger)">⚠️ Logged RRSP amount in ${ev.overContrib} is over the available room — check CRA (1%/month penalty on excess over $2,000).</span>`);
+  document.getElementById('pl-warn').innerHTML = w.join('<br>');
+  const keys=Object.keys(invActuals).sort();
+  document.getElementById('pl-actuals').textContent = keys.length ? `📈 Using logged actuals for ${keys.length} month(s): ${keys[0]}${keys.length>1?' → '+keys[keys.length-1]:''}.` : 'No actuals logged yet — using the planned amounts for every month.';
+  // step 2 refunds
+  const typical = R[2030]||0, later = R[2040]||0, first = R[2028]||0;
+  document.getElementById('pl-ref-title').textContent = `Every spring — CRA refund ≈ ${$r(typical)}`;
+  document.getElementById('pl-ref-sub').textContent = `Kseniya ~${$r(taxSaving(ENG.salaryK,S.k_rrsp*12))} + Artemii ~${$r(taxSaving(ENG.salaryA,S.a_rrsp*12))}. First one, spring 2028: ~${$r(first)}` + (Math.abs(later-typical)>500 ? ` · later years ~${$r(later)}.` : '.');
+  const rows=[]; const efY=ev.efFull?ev.efFull[0]:null, mY=ev.mortPaid?ev.mortPaid[0]:null;
+  rows.push(`<tr><td class="mono">2028</td><td>🛟 Emergency fund</td><td>~${$r(Math.min(first,ENG.efTarget))} saved</td></tr>`);
+  if (efY && efY>2028) rows.push(`<tr><td class="mono">${efY}</td><td>🛟 Emergency fund → 🏠 mortgage</td><td>Fund full at <strong>$45K</strong></td></tr>`);
+  const base = runPlan(S, invActuals, {spendRefunds:true});
+  const saved = base.interest - lastRun.interest;
+  if (mY) rows.push(`<tr><td class="mono">${(efY||2028)+1}–${String(mY).slice(2)}</td><td>🏠 Mortgage lump sum</td><td><strong>Mortgage gone ${ymTxt(ev.mortPaid)}</strong> (instead of Jan 2042 · ~$${Math.round(saved/1000)}K interest saved)</td></tr>`);
+  else rows.push(`<tr><td class="mono">${(efY||2028)+1}+</td><td>🏠 Mortgage lump sum</td><td>Mortgage still running in 2052</td></tr>`);
+  if (mY) rows.push(`<tr><td class="mono">${mY+1}+</td><td>📈 TFSA / investments</td><td>Plus invest the $4,332/mo you no longer pay on the mortgage</td></tr>`);
+  document.getElementById('pl-ref-rows').innerHTML = rows.join('');
+  // details tables
+  const yr = (y,lab,hl)=>`<tr${hl?' class="highlight"':''}><td><strong>${y}</strong><br><span style="font-size:11px;color:var(--muted)">${lab}</span></td><td class="mono">${$m(Y[y].total)}</td><td class="mono">${$m(todaysMoney(Y[y].total,y))}</td><td class="mono">${$r(inc(y))}</td></tr>`;
+  document.getElementById('pl-years').innerHTML = `<tr><th>Retire</th><th>Pot</th><th>Today's $</th><th>Per mo</th></tr>` + yr(2043,'Both stop at 56 / 60') + (goalYear&&goalYear!==2043&&goalYear!==2048&&goalYear!==2052?yr(goalYear,'Goal first covered'):'') + yr(2048,'Artemii turns 65') + yr(2052,'Kseniya turns 65',true);
+  const ac=(l,k)=>`<tr><td>${l}</td><td class="mono">${$m(Y[2048][k])}</td><td class="mono">${$m(Y[2052][k])}</td></tr>`;
+  document.getElementById('pl-acc').innerHTML = `<tr><th>Account</th><th>2048</th><th>2052</th></tr>`+ac('Kseniya RRSP','K_RRSP')+ac('Kseniya TFSA','K_TFSA')+ac('Artemii RRSP','A_RRSP')+ac('Artemii TFSA','A_TFSA')+ac('Non-registered','NonReg');
+  document.getElementById('pl-assump').innerHTML = `<strong>Assumptions:</strong> 7%/yr return (before Wealthsimple fees, ~0.5%), 2.5% inflation, salaries stay flat (Kseniya $233K, Artemii $165K), mortgage stays at 5.56%, $45K emergency fund in 3% savings. Contributions run until each turns 65. Refunds use 2026 Alberta + federal tax brackets, salary only, no bonus. About two-thirds of the pot is RRSP, which is taxed when withdrawn; TFSA is tax-free. Spending the refunds instead would leave ~${$m(lastSpend.years[2052].total)} in 2052 instead of ${$m(Y[2052].total)}.`;
+  if (retChart) drawRetChart();
+}
+
+function drawRetChart() {
+  if (!lastRun || typeof Chart==='undefined') return;
   const labels=[], d1=[], d2=[], d3=[];
-  for(let y=2026;y<=2052;y++){ labels.push(y); d1.push(Math.round(PLAN[y-2026]/1000)); d2.push(Math.round(PLAN_SPEND[y-2026]/1000)); d3.push(Math.round(PLAN_COAST[y-2026]/1000)); }
-  if(typeof Chart==='undefined') return;
-  if(retChart) retChart.destroy();
+  let coast = 562094;
+  for (let y=2026;y<=2052;y++){ coast*=Math.pow(1+ENG.ret/12, y===2026?2:12); labels.push(y); d1.push(Math.round(lastRun.years[y].total/1000)); d2.push(Math.round(lastSpend.years[y].total/1000)); d3.push(Math.round(coast/1000)); }
+  if (retChart) retChart.destroy();
   retChart = new Chart(document.getElementById('retChart').getContext('2d'),{
     type:'line', data:{labels, datasets:[
       {label:'The plan',data:d1,borderColor:'#2d5a3d',backgroundColor:'rgba(45,90,61,.08)',borderWidth:2.5,fill:true,tension:.3,pointRadius:0},
@@ -1081,6 +1234,36 @@ function updateRetirement() {
       plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,callbacks:{label:c=>` ${c.dataset.label}: $${(c.parsed.y/1000).toFixed(2)}M`}}},
       scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{callback:v=>'$'+(v/1000)+'M'}}}}
   });
+}
+function updateRetirement(){ fillPlanInputs(); renderPlan(); }
+
+// ============ INVESTMENT ACTUALS ============
+function curMonth(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+function fillInvForm() {
+  const mEl=document.getElementById('iv-month'); if(!mEl.value) mEl.value=curMonth();
+  const a=invActuals[mEl.value] || {k_rrsp:planS.k_rrsp,a_rrsp:planS.a_rrsp,k_tfsa:planS.k_tfsa,a_tfsa:planS.a_tfsa};
+  ['k_rrsp','a_rrsp','k_tfsa','a_tfsa'].forEach(k=>document.getElementById('iv-'+k).value=a[k]);
+  renderInvList();
+}
+function saveInvestment() {
+  const month=document.getElementById('iv-month').value, st=document.getElementById('iv-status');
+  if(!month){ st.textContent='⚠️ Pick a month'; return; }
+  const rec={}; ['k_rrsp','a_rrsp','k_tfsa','a_tfsa'].forEach(k=>rec[k]=Math.max(0,parseFloat(document.getElementById('iv-'+k).value)||0));
+  invActuals[month]=rec;
+  try { localStorage.setItem(LS_INV, JSON.stringify(invActuals)); } catch(e){}
+  st.textContent='⏳ Saving…'; st.style.color='var(--muted)';
+  fetch(SHEET_ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({type:'investment',month},rec))})
+    .then(()=>{ st.textContent=`✅ Saved ${month} — plan recalculated`; st.style.color='var(--accent)'; })
+    .catch(()=>{ st.textContent='Saved on this device only (offline)'; st.style.color='var(--warn)'; });
+  renderPlan(); renderInvList();
+}
+function renderInvList() {
+  const el=document.getElementById('iv-list'); if(!el) return;
+  const keys=Object.keys(invActuals).sort().reverse();
+  if(!keys.length){ el.innerHTML='<span style="color:var(--muted)">No months logged yet.</span>'; return; }
+  const planned=planS.k_rrsp+planS.a_rrsp+planS.k_tfsa+planS.a_tfsa;
+  el.innerHTML = keys.slice(0,12).map(k=>{ const a=invActuals[k], t=a.k_rrsp+a.a_rrsp+a.k_tfsa+a.a_tfsa, d=t-planned;
+    return `<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)"><span class="mono">${k}</span><span style="font-size:12px;color:var(--muted)">RRSP ${$n(a.k_rrsp)} / ${$n(a.a_rrsp)} · TFSA ${$n(a.k_tfsa)} / ${$n(a.a_tfsa)}</span><span class="mono" style="color:${d>=0?'var(--accent)':'var(--danger)'}">${$n(t)}</span></div>`; }).join('');
 }
 
 // ============ SCENARIOS CHART ============
@@ -1245,6 +1428,7 @@ function renderRecentLog() {
 
 // ============ INIT ============
 renderAll();
+fillPlanInputs(); renderPlan(); loadShared();
 const now = new Date();
 document.getElementById('monthLabel').textContent =
   now.toLocaleString('en-CA',{month:'long',year:'numeric'});
