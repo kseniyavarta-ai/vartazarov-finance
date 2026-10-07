@@ -156,10 +156,9 @@
 <div class="tabs">
   <div class="tab active" onclick="showTab('spending',this)">📊 This Month</div>
   <div class="tab" onclick="showTab('logger',this)">📝 Log Expense</div>
-  <div class="tab" onclick="showTab('retirement',this)">🎯 Retirement</div>
+  <div class="tab" onclick="showTab('retirement',this)">🎯 The Plan</div>
   <div class="tab" onclick="showTab('scenarios',this)">⚖️ Scenarios</div>
   <div class="tab" onclick="showTab('actions',this)">✅ Action List</div>
-  <div class="tab" onclick="showTab('invest',this)">💰 How to Invest</div>
   <div class="tab" onclick="showTab('debt',this)">🔥 Debt Attack</div>
 </div>
 
@@ -311,153 +310,95 @@
 </div>
 <!-- ========== END LOGGER TAB ========== -->
 
-<!-- ========== TAB: RETIREMENT ========== -->
+<!-- ========== TAB: THE PLAN ========== -->
 <div id="tab-retirement" class="tab-content">
-<div class="main">
+<div class="main" style="max-width:760px">
 
-  <div class="grid-2" style="margin-bottom:16px">
-    <div class="stat-card">
-      <div class="stat-label">Total Portfolio Today</div>
-      <div class="stat-value stat-green">$562,094</div>
-      <div class="stat-sub">RRSP $416K + TFSA $146K (Kseniya + Artemii)</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Ages Today</div>
-      <div class="stat-value">39 / 43</div>
-      <div class="stat-sub">Kseniya 39 · Artemii 43 · Oct 2026</div>
-    </div>
-  </div>
-
-  <div style="background:var(--accent);color:white;border-radius:var(--radius);padding:22px;margin-bottom:16px">
-    <div style="font-size:11px;opacity:.75;text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px">🎯 Your household total — one pot, two checkpoints</div>
-    <div class="grid-2" style="gap:14px">
-      <div style="background:rgba(255,255,255,.12);border-radius:10px;padding:16px">
-        <div style="font-size:13px;opacity:.85">Checkpoint 1 · <strong>2048</strong> · Artemii turns 65</div>
-        <div style="font-size:34px;font-weight:700;letter-spacing:-.5px;margin:4px 0">$8.49M</div>
-        <div style="font-size:15px">≈ <strong>$4.91M</strong> in today's money</div>
-        <div style="font-size:13px;opacity:.85;margin-top:6px">→ ~$14,300/mo income (today's money, before tax)</div>
+  <!-- RESULT -->
+  <div style="background:var(--accent);color:white;border-radius:var(--radius);padding:22px;margin-bottom:20px">
+    <div style="font-size:11px;opacity:.75;text-transform:uppercase;letter-spacing:.8px">The goal</div>
+    <div style="font-size:22px;font-weight:700;margin:4px 0 16px">Retire at 65 with $12,000/mo ✅</div>
+    <div class="grid-2" style="gap:12px">
+      <div style="background:rgba(255,255,255,.12);border-radius:10px;padding:14px">
+        <div style="font-size:12px;opacity:.85">2048 · Artemii turns 65</div>
+        <div style="font-size:30px;font-weight:700;margin:2px 0">$8.49M</div>
+        <div style="font-size:14px">≈ <strong>$4.91M</strong> today · ~$14,300/mo</div>
       </div>
-      <div style="background:rgba(255,255,255,.12);border-radius:10px;padding:16px">
-        <div style="font-size:13px;opacity:.85">Checkpoint 2 · <strong>2052</strong> · Kseniya turns 65</div>
-        <div style="font-size:34px;font-weight:700;letter-spacing:-.5px;margin:4px 0">$11.59M</div>
-        <div style="font-size:15px">≈ <strong>$6.08M</strong> in today's money</div>
-        <div style="font-size:13px;opacity:.85;margin-top:6px">→ ~$17,700/mo income (today's money, before tax)</div>
+      <div style="background:rgba(255,255,255,.12);border-radius:10px;padding:14px">
+        <div style="font-size:12px;opacity:.85">2052 · Kseniya turns 65</div>
+        <div style="font-size:30px;font-weight:700;margin:2px 0">$11.59M</div>
+        <div style="font-size:14px">≈ <strong>$6.08M</strong> today · ~$17,700/mo</div>
       </div>
     </div>
-    <div style="font-size:11px;opacity:.75;margin-top:12px;line-height:1.5">Same money, not added together: the $8.49M in 2048 keeps growing to $11.59M by 2052. Includes both of you, all accounts. Goal: $12,000/mo — covered from ~2046.<br>
-    + CPP &amp; OAS from 65 (not included above): est. ~$2,981/mo combined in today's money (~$1,490 each). OAS can be reduced if retirement income is high. Check exact CPP amounts on My Service Canada Account.</div>
+    <div style="font-size:11px;opacity:.75;margin-top:12px;line-height:1.5">One household pot at two dates — not added together. Monthly income = 3.5% of the pot, in today's money, before tax. Goal is covered from ~2046.<br>+ CPP &amp; OAS from 65, not included: est. ~$2,981/mo combined today (~$1,490 each). OAS can be reduced if retirement income is high.</div>
   </div>
 
-  <div class="card" style="border:2px solid var(--accent)">
-    <div class="card-title">🧭 The Plan — retire at 65 each</div>
-    <table class="budget-table">
-      <thead><tr><th>Every month (from Nov 2026)</th><th>Amount</th><th>Until</th></tr></thead>
+  <!-- STEP 1 -->
+  <div class="card">
+    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:6px"><div style="width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">1</div><div><div class="card-title" style="margin-bottom:2px">Set up in November — automatic, monthly</div><div style="font-size:13px;color:var(--muted)">Wealthsimple → each account → Auto-deposit</div></div></div>
+    <table class="budget-table" style="margin-top:10px">
       <tbody>
-        <tr><td>Kseniya RRSP (includes slow catch-up)</td><td class="mono">$3,000</td><td>2052 (K turns 65)</td></tr>
-        <tr><td>Artemii RRSP</td><td class="mono">$2,550</td><td>2048 (A turns 65)</td></tr>
-        <tr><td>TFSA (Kseniya $693 + Artemii $583)</td><td class="mono">$1,276</td><td>each to 65</td></tr>
-        <tr class="highlight"><td>Total invested monthly</td><td class="mono">$6,826</td><td></td></tr>
+        <tr><td>Kseniya → RRSP</td><td class="mono" style="text-align:right"><strong>$3,000</strong></td></tr>
+        <tr><td>Artemii → RRSP <span style="font-size:11px;color:var(--warn)">(confirm room on CRA first)</span></td><td class="mono" style="text-align:right"><strong>$2,550</strong></td></tr>
+        <tr><td>Kseniya → TFSA</td><td class="mono" style="text-align:right">$693</td></tr>
+        <tr><td>Artemii → TFSA</td><td class="mono" style="text-align:right">$583</td></tr>
+        <tr><td>Margo → RESP <span style="font-size:11px;color:var(--muted)">(already running at RBC)</span></td><td class="mono" style="text-align:right">$210</td></tr>
+        <tr style="background:var(--blue-bg)"><td><strong>Total set aside</strong></td><td class="mono" style="text-align:right"><strong>$7,036/mo</strong></td></tr>
+        <tr><td style="color:var(--muted)">Left over from the ~$10,835 surplus</td><td class="mono" style="text-align:right;color:var(--muted)">~$3,800/mo breathing room</td></tr>
       </tbody>
     </table>
-    <div class="section-label">Every spring — the CRA refund (~$26,500/yr)</div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
-      <div style="background:var(--warn-bg);border-radius:8px;padding:12px"><div style="font-weight:700">① Emergency fund</div><div style="font-size:13px;color:var(--muted)">First $45K → high-interest savings. Full by <strong>April 2029</strong> (2 refunds).</div></div>
-      <div style="background:var(--danger-bg);border-radius:8px;padding:12px"><div style="font-weight:700">② Mortgage</div><div style="font-size:13px;color:var(--muted)">Then every refund → lump-sum prepayment. Paid off <strong>Aug 2036</strong> instead of Dec 2041 · saves ~$84K interest.</div></div>
-      <div style="background:#eefaf2;border-radius:8px;padding:12px"><div style="font-weight:700">③ Invest</div><div style="font-size:13px;color:var(--muted)">After 2036: refunds + the freed $4,332/mo mortgage payment → TFSA / non-registered.</div></div>
-    </div>
+    <div style="font-size:12px;color:var(--muted);margin-top:8px">Keep these going until each of you turns 65 (Artemii 2048, Kseniya 2052).</div>
   </div>
 
-  <div class="section-label">Choose a retirement year</div>
-  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px" id="ret-scenario-grid">
-    <div class="ret-scenario-card" id="rs-2043" onclick="setScenario(2043,this)">
-      <div class="rs-year">2043</div><div class="rs-ages">K56 · A60</div><div class="rs-label">Early option</div>
-    </div>
-    <div class="ret-scenario-card" id="rs-2046" onclick="setScenario(2046,this)">
-      <div class="rs-year">2046</div><div class="rs-ages">K59 · A63</div><div class="rs-label">First year above $12K/mo goal</div>
-    </div>
-    <div class="ret-scenario-card" id="rs-2048" onclick="setScenario(2048,this)">
-      <div class="rs-year">2048</div><div class="rs-ages">K61 · A65</div><div class="rs-label">Artemii retires at 65</div>
-    </div>
-    <div class="ret-scenario-card active" id="rs-2052" onclick="setScenario(2052,this)">
-      <div class="rs-year">2052</div><div class="rs-ages">K65 · A69</div><div class="rs-label">✅ Kseniya retires at 65</div>
-    </div>
-    <div class="ret-scenario-card" id="rs-custom" onclick="setScenario('custom',this)" style="grid-column:span 2">
-      <div class="rs-year" id="rs-custom-yr">Custom</div>
-      <div class="rs-ages"><input type="number" id="custom-year-input" value="2045" min="2027" max="2052" style="width:70px;font-size:13px;border:1px solid var(--border);border-radius:6px;padding:2px 6px;text-align:center" onclick="event.stopPropagation()" onchange="setScenario('custom',document.getElementById('rs-custom'))"></div>
-      <div class="rs-label">Any year 2027–2052</div>
-    </div>
-  </div>
-
-  <div id="ret-summary-panel" style="background:var(--accent);color:white;border-radius:var(--radius);padding:20px;margin-bottom:16px">
-    <div style="font-size:11px;opacity:.7;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">YOUR RETIREMENT PICTURE</div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:14px">
-      <div>
-        <div style="font-size:11px;opacity:.7;margin-bottom:4px">RETIRE IN</div>
-        <div style="font-size:28px;font-weight:700" id="rsp-year">2052</div>
-        <div style="font-size:12px;opacity:.8" id="rsp-ages"></div>
-      </div>
-      <div>
-        <div style="font-size:11px;opacity:.7;margin-bottom:4px">PORTFOLIO</div>
-        <div style="font-size:28px;font-weight:700" id="rsp-portfolio"></div>
-        <div style="font-size:12px;opacity:.8" id="rsp-years-away"></div>
-      </div>
-      <div>
-        <div style="font-size:11px;opacity:.7;margin-bottom:4px">MONTHLY INCOME @ 3.5%</div>
-        <div style="font-size:28px;font-weight:700" id="rsp-income"></div>
-        <div style="font-size:12px;opacity:.8" id="rsp-income-note"></div>
-      </div>
-    </div>
-    <div id="rsp-note" style="background:rgba(255,255,255,0.15);border-radius:8px;padding:10px;font-size:13px;line-height:1.5"></div>
-  </div>
-
-  <div class="banner banner-info">
-    ℹ️ <span>Assumes 7%/yr return, 2.5%/yr inflation, salaries stay flat (no raises), mortgage stays at 5.56%. "Today's money" = what that amount buys now. Income is <strong>before tax</strong> — RRSP withdrawals are taxable, TFSA withdrawals are not. Refunds are estimates (2026 brackets, salary only, no bonus).</span>
-  </div>
-
+  <!-- STEP 2 -->
   <div class="card">
-    <div class="card-title">📈 Portfolio Projection 2026–2052</div>
-    <div style="height:320px"><canvas id="retChart"></canvas></div>
-    <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:16px;font-size:12px;color:var(--muted)">
-      <span><span class="legend-dot" style="background:#2d5a3d"></span> The plan (refunds used)</span>
-      <span><span class="legend-dot" style="background:#94a3b8"></span> Same, but refunds spent</span>
-      <span><span class="legend-dot" style="background:#d4d0c8"></span> Stop contributing today</span>
-      <span><span class="legend-dot" style="background:#c17f2a"></span> Selected year</span>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">🧾 Where the money sits</div>
-    <table class="compare-table">
-      <tr><th>Account</th><th>2048 (A retires)</th><th>2052 (K retires)</th></tr>
-      <tr><td>Kseniya RRSP</td><td class="mono">$3.20M</td><td class="mono">$4.39M</td></tr>
-<tr><td>Kseniya TFSA</td><td class="mono">$917K</td><td class="mono">$1.25M</td></tr>
-<tr><td>Artemii RRSP</td><td class="mono">$2.28M</td><td class="mono">$3.01M</td></tr>
-<tr><td>Artemii TFSA</td><td class="mono">$576K</td><td class="mono">$762K</td></tr>
-<tr><td>Non-registered (refunds + freed mortgage $)</td><td class="mono">$1.52M</td><td class="mono">$2.18M</td></tr>
-<tr class="highlight"><td>Total invested</td><td class="mono">$8.49M</td><td class="mono">$11.59M</td></tr>
-<tr><td>Emergency fund (cash, 3% savings)</td><td class="mono">$81K</td><td class="mono">$91K</td></tr>
+    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:6px"><div style="width:30px;height:30px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">2</div><div><div class="card-title" style="margin-bottom:2px">Every spring — CRA refund ≈ $26,500</div><div style="font-size:13px;color:var(--muted)">Kseniya ~$15,100 (42¢ per $1) + Artemii ~$11,300 (~37¢ per $1). First one, spring 2028: ~$30,800.</div></div></div>
+    <table class="budget-table" style="margin-top:10px">
+      <thead><tr><th>Spring</th><th>Refund goes to</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">2028</td><td>🛟 Emergency fund</td><td>~$30,800 saved</td></tr>
+        <tr><td class="mono">2029</td><td>🛟 Emergency fund → 🏠 mortgage</td><td>Fund full at <strong>$45K</strong></td></tr>
+        <tr><td class="mono">2030–36</td><td>🏠 Mortgage lump sum</td><td><strong>Mortgage gone Aug 2036</strong> (5 yrs early, ~$84K interest saved)</td></tr>
+        <tr><td class="mono">2037+</td><td>📈 TFSA / investments</td><td>Plus invest the $4,332/mo you no longer pay on the mortgage</td></tr>
+      </tbody>
     </table>
-    <div style="font-size:12px;color:var(--muted);margin-top:10px">Kseniya's RRSP alone reaches ~$4.39M by 2052 — in line with Wealthsimple's projection for that account. About two-thirds of everything is in RRSPs, which are taxed on withdrawal; worth a tax-planning check closer to 60.</div>
   </div>
 
+  <!-- STEP 3 -->
   <div class="card">
-    <div class="card-title">💸 Retirement Spending Target (today's dollars, mortgage-free)</div>
-    <div class="budget-row"><span class="budget-cat"><span class="budget-cat-name">Housing (taxes/HOA)</span></span><span class="budget-budget mono">$800</span></div>
-    <div class="budget-row"><span class="budget-cat"><span class="budget-cat-name">Groceries & living</span></span><span class="budget-budget mono">$3,000</span></div>
-    <div class="budget-row"><span class="budget-cat"><span class="budget-cat-name">Travel & leisure</span></span><span class="budget-budget mono">$4,000</span></div>
-    <div class="budget-row"><span class="budget-cat"><span class="budget-cat-name">Health & wellness</span></span><span class="budget-budget mono">$2,000</span></div>
-    <div class="budget-row"><span class="budget-cat"><span class="budget-cat-name">Cars & transport</span></span><span class="budget-budget mono">$800</span></div>
-    <div class="budget-row"><span class="budget-cat"><span class="budget-cat-name">Misc, gifts, extras</span></span><span class="budget-budget mono">$1,400</span></div>
-    <div class="budget-row" style="font-weight:700"><span class="budget-cat">Total / month</span><span class="budget-budget mono">$12,000</span></div>
-    <div class="banner banner-ok" style="margin-top:14px">
-      🏛️ <strong>CPP + OAS from 65</strong> (Artemii 2048, Kseniya 2052): ~$2,981/mo combined in today's dollars, on top of the portfolio. Not included in the numbers above.
+    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:6px"><div style="width:30px;height:30px;border-radius:50%;background:var(--purple);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">3</div><div><div class="card-title" style="margin-bottom:2px">Once a year — 15 minutes</div></div></div>
+    <div style="font-size:14px;line-height:1.9;margin-top:6px">
+      ☐ <strong>Feb:</strong> check RRSP + TFSA room on CRA My Account (both)<br>
+      ☐ <strong>Apr:</strong> file taxes → move the refund the same day it lands<br>
+      ☐ <strong>Jun 2028:</strong> start shopping the mortgage renewal (due Dec 2028)
     </div>
   </div>
 
-  <div class="card">
-    <div class="card-title">🗓️ Milestones</div>
-    <div id="milestones-list"></div>
-  </div>
+  <!-- DETAILS -->
+  <details class="card" style="cursor:pointer" ontoggle="if(this.open) updateRetirement()">
+    <summary style="font-weight:600;font-size:15px">📈 Details — chart, other retirement years, assumptions</summary>
+    <div style="cursor:default;margin-top:16px">
+      <div style="height:280px"><canvas id="retChart"></canvas></div>
+      <div style="margin:10px 0 18px;display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--muted)">
+        <span><span class="legend-dot" style="background:#2d5a3d"></span> The plan</span>
+        <span><span class="legend-dot" style="background:#94a3b8"></span> Same, but refunds spent</span>
+        <span><span class="legend-dot" style="background:#d4d0c8"></span> Stop contributing today</span>
+      </div>
+      <div class="section-label">If you retire earlier or later</div>
+      <table class="compare-table">
+        <tr><th>Retire</th><th>Pot</th><th>Today's $</th><th>Per mo</th></tr>
+        <tr><td><strong>2043</strong><br><span style="font-size:11px;color:var(--muted)">Both stop at 56 / 60</span></td><td class="mono">$5.31M</td><td class="mono">$3.48M</td><td class="mono">$10,100</td></tr><tr><td><strong>2046</strong><br><span style="font-size:11px;color:var(--muted)">Goal first covered</span></td><td class="mono">$7.08M</td><td class="mono">$4.30M</td><td class="mono">$12,600</td></tr><tr><td><strong>2048</strong><br><span style="font-size:11px;color:var(--muted)">Artemii turns 65</span></td><td class="mono">$8.49M</td><td class="mono">$4.91M</td><td class="mono">$14,300</td></tr><tr class="highlight"><td><strong>2052</strong><br><span style="font-size:11px;color:var(--muted)">Kseniya turns 65</span></td><td class="mono">$11.59M</td><td class="mono">$6.08M</td><td class="mono">$17,700</td></tr>
+      </table>
+      <div class="section-label">Where the money sits</div>
+      <table class="compare-table">
+        <tr><th>Account</th><th>2048</th><th>2052</th></tr>
+        <tr><td>Kseniya RRSP</td><td class="mono">$3.20M</td><td class="mono">$4.39M</td></tr><tr><td>Kseniya TFSA</td><td class="mono">$0.92M</td><td class="mono">$1.25M</td></tr><tr><td>Artemii RRSP</td><td class="mono">$2.28M</td><td class="mono">$3.01M</td></tr><tr><td>Artemii TFSA</td><td class="mono">$0.58M</td><td class="mono">$0.76M</td></tr><tr><td>Non-registered</td><td class="mono">$1.52M</td><td class="mono">$2.18M</td></tr>
+      </table>
+      <div style="font-size:12px;color:var(--muted);margin-top:14px;line-height:1.6">
+        <strong>Assumptions:</strong> 7%/yr return (before Wealthsimple fees, ~0.5%), 2.5% inflation, salaries stay flat, mortgage stays at 5.56%, emergency fund in 3% savings. Refunds use 2026 Alberta + federal tax brackets, salary only, no bonus. Kseniya's $3,000/mo is slightly over the yearly RRSP max ($33,810), so it slowly uses her $74,654 of catch-up room — no risk of going over. About two-thirds of the pot is RRSP, which is taxed when withdrawn; TFSA is tax-free. Spending the refunds instead would leave ~$10.1M in 2052 instead of $11.6M.
+      </div>
+    </div>
+  </details>
 
 </div>
 </div>
@@ -578,7 +519,7 @@
       <tr><td>Early: both stop</td><td class="mono">2043</td><td>K56 · A60</td><td class="mono">$5.31M</td><td class="mono">$3.48M</td><td class="mono">$10,100/mo</td></tr>
       <tr><td>First year goal is covered</td><td class="mono">2046</td><td>K59 · A63</td><td class="mono">$7.08M</td><td class="mono">$4.30M</td><td class="mono">$12,600/mo</td></tr>
       <tr><td>Artemii retires at 65</td><td class="mono">2048</td><td>K61 · A65</td><td class="mono">$8.49M</td><td class="mono">$4.91M</td><td class="mono">$14,300/mo</td></tr>
-      <tr class="highlight"><td><strong>✅ Kseniya retires at 65</strong></td><td class="mono">2052</td><td>K65 · A69</td><td class="mono">$11.59M</td><td class="mono">$6.08M</td><td class="mono">$17,700/mo</td></tr>
+      <tr class="highlight"><td><strong>✅ Kseniya retires at 65</strong></td><td class="mono">2052</td><td>K65 · A69</td><td class="mono">$11.59M</td><td class="mono">$6.08M</td><td class="mono">$17,700</td></tr>
     </table>
     <div style="font-size:12px;color:var(--muted);margin-top:8px">7%/yr return, 2.5% inflation, flat salaries. Income is before tax — RRSP withdrawals are taxable; TFSA withdrawals are not. CPP + OAS from 65 come on top.</div>
   </div>
@@ -634,7 +575,7 @@
       <div class="action-num warn">3</div>
       <div>
         <div class="action-title">Start Artemii's RRSP contribution plan for November</div>
-        <div class="action-desc">Set up $2,550/mo auto-contribution from Day 1 of new job. At $170K salary: ~$11,300 refund/yr. See 💰 How to Invest tab for the full allocation plan.</div>
+        <div class="action-desc">Set up $2,550/mo auto-contribution from Day 1 of new job. At $170K salary: ~$11,300 refund/yr. See 🎯 The Plan tab.</div>
       </div>
     </div>
   </div>
@@ -645,7 +586,7 @@
       <div class="action-num">4</div>
       <div>
         <div class="action-title">Set up auto-invest: RRSP $3,000 Kseniya + $2,550 Artemii, TFSA $1,276 = $6,826/mo</div>
-        <div class="action-desc">$66,600/yr into RRSPs → ~$26,500 refund each spring. Refunds go to the $45K emergency fund first (full April 2029), then to the mortgage. See 💰 How to Invest tab for exact steps.</div>
+        <div class="action-desc">$66,600/yr into RRSPs → ~$26,500 refund each spring. Refunds go to the $45K emergency fund first (full April 2029), then to the mortgage. See 🎯 The Plan tab.</div>
       </div>
     </div>
     <div class="action-item">
@@ -715,133 +656,14 @@
 </div>
 </div>
 
-<!-- ===== HOW TO INVEST TAB ===== -->
-<div id="tab-invest" class="tab-content">
-<div class="main">
 
-  <div class="banner banner-ok">
-    💡 <strong>You have ~$10,835/mo surplus starting November.</strong> Plan: $6,826/mo invested (RRSP + TFSA), ~$3,800/mo breathing room. Spring refunds build the emergency fund, then pay off the mortgage.
-  </div>
-
-  <!-- PRIORITY 1: RRSP -->
-  <div class="section-label">🥇 Priority 1 — RRSP (Biggest Win)</div>
-  <div class="card">
-    <p style="margin-bottom:14px;color:var(--muted);font-size:14px">RRSP reduces your <em>taxable income</em>. CRA gives back about <strong>42¢ per $1 for Kseniya</strong> ($233K salary) and <strong>~37¢ per $1 for Artemii</strong> ($170K).</p>
-    <table class="budget-table">
-      <thead><tr><th>Who</th><th>Monthly</th><th>Per year</th><th>Refund / yr</th><th>Until</th></tr></thead>
-      <tbody>
-        <tr><td><strong>Kseniya RRSP</strong></td><td class="mono" style="color:var(--accent)">$3,000</td><td class="mono">$36,000</td><td class="mono" style="color:var(--accent)">~$15,100</td><td>2052 (65)</td></tr>
-        <tr><td><strong>Artemii RRSP</strong></td><td class="mono" style="color:var(--accent)">$2,550</td><td class="mono">$30,600 <span style="font-size:11px;color:var(--muted)">(confirm room on CRA)</span></td><td class="mono" style="color:var(--accent)">~$11,300</td><td>2048 (65)</td></tr>
-        <tr style="background:var(--blue-bg)"><td><strong>Combined</strong></td><td class="mono"><strong>$5,550</strong></td><td class="mono"><strong>$66,600</strong></td><td class="mono" style="color:var(--blue)"><strong>~$26,500</strong></td><td><span style="font-size:11px;color:var(--muted)">first refund (spring 2028) ~$30,800</span></td></tr>
-      </tbody>
-    </table>
-    <div style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.6"><strong>Catch-up:</strong> Kseniya's normal yearly max is $33,810. $3,000/mo = $36,000, so each year uses ~$2,190 of the $74,654 catch-up room — slow and steady, no risk of going over. 2026 contributions are claimed on the 2027 return. Estimates: 2026 Alberta + federal brackets, salary only, no bonus.</div>
-    <div style="background:var(--warn-bg);border:1px solid #e8c878;border-radius:8px;padding:12px;margin-top:12px;font-size:13px">
-      ⚡ <strong>Action:</strong> WealthSimple → RRSP → automatic monthly transfer of <strong>$3,000</strong> (Kseniya) and <strong>$2,550</strong> (Artemii) from November.
-    </div>
-  </div>
-
-  <!-- PRIORITY 2: TFSA -->
-  <div class="section-label">🥈 Priority 2 — TFSA (Tax-Free Forever)</div>
-  <div class="card">
-    <p style="margin-bottom:14px;color:var(--muted);font-size:14px">TFSA growth is completely tax-free — no tax on gains, dividends, or withdrawals. You can withdraw anytime without penalty. 2026 annual limit: $7,000 each, but accumulated unused room can be much higher.</p>
-    <table class="budget-table">
-      <thead><tr><th>Who</th><th>Monthly</th><th>Remaining 2026 Room</th><th>Note</th></tr></thead>
-      <tbody>
-        <tr><td><strong>Kseniya TFSA</strong></td><td class="mono" style="color:var(--blue)">$693/mo</td><td class="mono">$8,325.40 remaining <span style="font-size:11px;color:var(--muted)">(of $13,687.56)</span></td><td>Already contributed $5,362.16 in 2026</td></tr>
-        <tr><td><strong>Artemii TFSA</strong></td><td class="mono" style="color:var(--blue)">$583/mo</td><td class="mono">$7,000/yr <span style="font-size:11px;color:var(--muted)">(est)</span></td><td>Confirm on CRA MyAccount</td></tr>
-        <tr style="background:var(--blue-bg)"><td><strong>Combined</strong></td><td class="mono"><strong>$1,276/mo</strong></td><td class="mono"></td><td><span style="font-size:11px;color:var(--muted)">pending Artemii CRA confirmation</span></td></tr>
-      </tbody>
-    </table>
-    <div style="background:var(--warn-bg);border:1px solid #e8c878;border-radius:8px;padding:12px;margin-top:12px;font-size:13px">
-      ✅ <strong>Kseniya's actual 2026 TFSA room:</strong> CRA limit $13,687.56 − $5,362.16 already contributed = <strong>$8,325.40 remaining</strong>. The CRA Warning on MyAccount is likely because contributions were recent and CRA's data lags — you're fine as long as total 2026 deposits don't exceed $13,687.56.<br><br>
-      ⚡ <strong>Action:</strong> WealthSimple → TFSA → Automatic monthly deposit $693 (Kseniya) / $583 (Artemii — confirm his room). Spring refunds go to the emergency fund first, then the mortgage.
-    </div>
-  </div>
-
-  <!-- MONTHLY ALLOCATION SUMMARY -->
-  <div class="section-label">📊 Your Monthly $10,835 Surplus</div>
-  <div class="card">
-    <table class="budget-table">
-      <thead><tr><th>Bucket</th><th>Monthly</th><th>Purpose</th></tr></thead>
-      <tbody>
-        <tr><td>RRSP (Kseniya $3,000 + Artemii $2,550)</td><td class="mono" style="color:var(--accent)">$5,550</td><td>Retirement + ~$26,500 refund each spring</td></tr>
-        <tr><td>TFSA (Kseniya $693 + Artemii $583)</td><td class="mono" style="color:var(--blue)">$1,276</td><td>Tax-free growth — accessible anytime</td></tr>
-        <tr><td>RESP (Margo)</td><td class="mono" style="color:var(--purple)">$210</td><td>Already at RBC · $500 free CESG grant/yr</td></tr>
-        <tr><td>Breathing room</td><td class="mono">$3,799</td><td>Not counted in any projection — irregular bills, travel, or extra investing if a month goes well</td></tr>
-        <tr style="background:var(--blue-bg)"><td><strong>Total</strong></td><td class="mono"><strong>$10,835</strong></td><td></td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- THE TAX REFUND PLAN -->
-  <div class="section-label">🎁 The Spring Refund Plan</div>
-  <div class="card">
-    <table class="budget-table">
-      <thead><tr><th>Spring</th><th>Refund (est.)</th><th>Goes to</th><th>Result</th></tr></thead>
-      <tbody>
-        <tr><td>2028</td><td class="mono">~$30,800</td><td>Emergency fund</td><td>EF $30,800</td></tr>
-        <tr><td>2029</td><td class="mono">~$26,500</td><td>EF ~$13,300 · mortgage ~$13,200</td><td>✅ EF full at $45K</td></tr>
-        <tr><td>2030–2036</td><td class="mono">~$26,500/yr</td><td>Mortgage prepayment</td><td>🏠 Paid off Aug 2036 (was Dec 2041) · ~$84K interest saved</td></tr>
-        <tr><td>2037–2048</td><td class="mono">~$26,500/yr</td><td>TFSA / non-registered</td><td>+ freed $4,332/mo mortgage payment invested too</td></tr>
-        <tr><td>2049–2052</td><td class="mono">~$15,100/yr</td><td>TFSA / non-registered</td><td>Only Kseniya still contributing</td></tr>
-      </tbody>
-    </table>
-    <div style="background:#f0f9f0;border:1px solid #b5d9be;border-radius:8px;padding:10px;margin-top:10px;font-size:13px">
-      📈 Using the refunds this way instead of spending them is worth ~<strong>$1.5M</strong> by 2052 ($11.6M vs $10.1M) — mostly because the mortgage disappears 5 years early and that payment gets invested. Mortgage prepayment limit is $114,888/yr, so a refund always fits.
-    </div>
-  </div>
-
-  <!-- WHERE IN WEALTHSIMPLE -->
-  <div class="section-label">📱 Step-by-Step: Setting It Up in WealthSimple</div>
-  <div class="card">
-    <div class="action-item">
-      <div class="action-num">1</div>
-      <div>
-        <div class="action-title">Check your TFSA room on CRA first</div>
-        <div class="action-desc">Go to canada.ca → My CRA Account → TFSA → "Room Available." If you've never maxed TFSA before, you may have $40K+ in unused room — you can deposit a lump sum immediately.</div>
-      </div>
-    </div>
-    <div class="action-item">
-      <div class="action-num">2</div>
-      <div>
-        <div class="action-title">Open WealthSimple → RRSP → Auto-Deposit</div>
-        <div class="action-desc">Set up: Kseniya <strong>$3,000/mo</strong> + Artemii <strong>$2,550/mo</strong> (confirm his room on CRA first). Both in WS Summit / Growth (managed). This runs automatically — you don't touch it.</div>
-      </div>
-    </div>
-    <div class="action-item">
-      <div class="action-num">3</div>
-      <div>
-        <div class="action-title">Open WealthSimple → TFSA → Auto-Deposit</div>
-        <div class="action-desc">⚠️ <strong>First:</strong> log into CRA MyAccount → TFSA → Transaction Summary to check Kseniya's actual 2026 remaining room (CRA shows $13,687.56 but has a Warning flag — verify before depositing). Then set up: Kseniya $693/mo + Artemii $583/mo (confirm his room too). Same "WS Core Growth" portfolio.</div>
-      </div>
-    </div>
-    <div class="action-item">
-      <div class="action-num">4</div>
-      <div>
-        <div class="action-title">RESP for Margo: $210/mo ≈ $2,500/yr ✅ already at RBC</div>
-        <div class="action-desc">Government adds $500 free (20% CESG). Just confirm the $210/mo auto-contribution is active.</div>
-      </div>
-    </div>
-    <div class="action-item">
-      <div class="action-num">5</div>
-      <div>
-        <div class="action-title">Keep the ~$3,800/mo breathing room in chequing</div>
-        <div class="action-desc">Leave it in RBC chequing to absorb variable months (travel, vet bills, Margo activities). This is not "wasted" — it's your insurance against touching investments.</div>
-      </div>
-    </div>
-  </div>
-
-</div>
-</div>
-<!-- ===== END HOW TO INVEST TAB ===== -->
 
 <!-- ========== TAB: DEBT ATTACK ========== -->
 <div id="tab-debt" class="tab-content">
 <div class="main">
 
   <div class="banner banner-warn">
-    🔥 <strong>Ramsey Mode — optional extras.</strong> Your main plan already kills the mortgage in <strong>Aug 2036</strong> using spring refunds (see 🎯 Retirement). The ideas below would go even faster, but take money from investing.
+    🔥 <strong>Ramsey Mode — optional extras.</strong> Your main plan already kills the mortgage in <strong>Aug 2036</strong> using spring refunds (see 🎯 The Plan). The ideas below would go even faster, but take money from investing.
   </div>
 
   <!-- DEBT SNAPSHOT -->
@@ -1130,7 +952,7 @@ function showTab(id, el) {
   document.getElementById('tab-'+id).classList.add('active');
   el.classList.add('active');
   if(id==='logger') { buildCatGrid(); initLoggerDate(); }
-  if(id==='retirement') { updateRetirement(); buildMilestones(); }
+  if(id==='retirement') { updateRetirement(); }
   if(id==='scenarios') { buildScenarioChart(); updateMazdaCalc(); }
 }
 
@@ -1230,7 +1052,6 @@ const PLAN = [582363, 709054, 844903, 990573, 1146773, 1314265, 1493865, 1686449
 const PLAN_SPEND = [582363, 709054, 844903, 990573, 1146773, 1314265, 1493865, 1686449, 1892954, 2114388, 2351829, 2606434, 2879446, 3172193, 3486103, 3822705, 4233391, 4677700, 5154127, 5664996, 6212796, 6800196, 7430059, 8031533, 8676488, 9368067, 10109640];
 const PLAN_COAST = [568671, 609780, 653861, 701129, 751814, 806162, 864440, 926930, 993938, 1065790, 1142836, 1225452, 1314040, 1409032, 1510891, 1620113, 1737231, 1862816, 1997479, 2141877, 2296713, 2462743, 2640775, 2831676, 3036379, 3255879, 3491246];
 const INFL = 0.025;
-let retYear = 2052;
 let retChart = null;
 
 function proj(base, monthly, years) {
@@ -1239,42 +1060,10 @@ function proj(base, monthly, years) {
   for(let m=0; m<years*12; m++) v = v*(1+r)+monthly;
   return Math.round(v);
 }
-function planVal(yr) { return PLAN[Math.min(Math.max(yr,2026),2052)-2026]; }
-function todays(v, yr) { return v / Math.pow(1+INFL, yr+1-2026.83); }
-
-const RET_NOTES = {
-  2043: 'Both stop at 56 / 60. Just short of the $12K/mo goal in today\'s money — doable with slightly lower spending, plus CPP/OAS later.',
-  2046: 'First year the portfolio covers the $12K/mo goal (today\'s money, before tax). Mortgage has been gone for 10 years.',
-  2048: 'Artemii retires at 65. Kseniya keeps working 4 more years — her salary covers the household since the mortgage is gone, so the portfolio keeps growing untouched.',
-  2052: 'Kseniya retires at 65. Comfortably above the $12K/mo goal — you have room to retire earlier, spend more, or leave a buffer for taxes.'
-};
-
-function setScenario(key, card) {
-  document.querySelectorAll('.ret-scenario-card').forEach(c=>c.classList.remove('active'));
-  card.classList.add('active');
-  let yr = key==='custom' ? parseInt(document.getElementById('custom-year-input').value)||2045 : key;
-  yr = Math.min(Math.max(yr,2027),2052);
-  if(key==='custom') document.getElementById('rs-custom-yr').textContent = yr;
-  retYear = yr;
-  updateRetirement(); buildMilestones();
-}
 
 function updateRetirement() {
-  const yr = retYear;
-  const v = planVal(yr), vt = todays(v, yr);
-  const inc = Math.round(v*0.035/12/50)*50, inct = Math.round(vt*0.035/12/50)*50;
-  document.getElementById('rsp-year').textContent = yr;
-  document.getElementById('rsp-ages').textContent = `Kseniya ${yr-1987} · Artemii ${yr-1983}`;
-  document.getElementById('rsp-portfolio').textContent = `$${(v/1e6).toFixed(2)}M`;
-  document.getElementById('rsp-years-away').textContent = `≈ $${(vt/1e6).toFixed(2)}M in today's money · ${yr-2026} yrs away`;
-  document.getElementById('rsp-income').textContent = `$${inct.toLocaleString()}/mo`;
-  document.getElementById('rsp-income-note').textContent = `today's money, before tax ($${inc.toLocaleString()} in ${yr} dollars)`;
-  const goal = inct >= 12000 ? '✅ Covers the $12K/mo goal.' : `⚠️ $${(12000-inct).toLocaleString()}/mo short of the $12K/mo goal.`;
-  document.getElementById('rsp-note').textContent = (RET_NOTES[yr] || `Retiring end of ${yr}.`) + ' ' + goal;
-
   const labels=[], d1=[], d2=[], d3=[];
   for(let y=2026;y<=2052;y++){ labels.push(y); d1.push(Math.round(PLAN[y-2026]/1000)); d2.push(Math.round(PLAN_SPEND[y-2026]/1000)); d3.push(Math.round(PLAN_COAST[y-2026]/1000)); }
-  const mark = d1.map((x,i)=> labels[i]===yr ? x : null);
   if(typeof Chart==='undefined') return;
   if(retChart) retChart.destroy();
   retChart = new Chart(document.getElementById('retChart').getContext('2d'),{
@@ -1282,31 +1071,11 @@ function updateRetirement() {
       {label:'The plan',data:d1,borderColor:'#2d5a3d',backgroundColor:'rgba(45,90,61,.08)',borderWidth:2.5,fill:true,tension:.3,pointRadius:0},
       {label:'Refunds spent',data:d2,borderColor:'#94a3b8',backgroundColor:'transparent',borderWidth:2,borderDash:[5,4],tension:.3,pointRadius:0},
       {label:'Stop contributing today',data:d3,borderColor:'#d4d0c8',backgroundColor:'transparent',borderWidth:1.5,tension:.3,pointRadius:0},
-      {label:`Retire ${yr}`,data:mark,borderColor:'#c17f2a',backgroundColor:'#c17f2a',pointRadius:mark.map(x=>x!==null?8:0),showLine:false},
     ]},
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,callbacks:{label:c=>c.parsed.y!==null?` ${c.dataset.label}: $${c.parsed.y.toLocaleString()}K`:null}}},
-      scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{callback:v=>'$'+v+'K'}}}}
+      plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,callbacks:{label:c=>` ${c.dataset.label}: $${(c.parsed.y/1000).toFixed(2)}M`}}},
+      scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{callback:v=>'$'+(v/1000)+'M'}}}}
   });
-}
-
-// ============ MILESTONES ============
-function buildMilestones() {
-  const ms = [
-    {year:2026,text:'<strong>Nov 2026:</strong> Auto-invest starts — Kseniya RRSP $3,000, Artemii RRSP $2,550, TFSAs $1,276. Portfolio $562K.'},
-    {year:2028,text:'<strong>April:</strong> first refund (~$30,800) → emergency fund. <strong>Dec:</strong> mortgage renewal — shop rates from June.'},
-    {year:2029,text:'<strong>April:</strong> emergency fund full ($45K). From now on every refund → mortgage prepayment.'},
-    {year:2036,text:'<strong>🏠 Aug 2036 — mortgage paid off</strong>, 5 years early (~$84K interest saved). $4,332/mo now gets invested.'},
-    {year:2046,text:`Portfolio ~$${(planVal(2046)/1e6).toFixed(1)}M — first year it covers $12K/mo in today\'s money.`},
-    {year:2048,text:`<strong>Artemii retires at 65.</strong> Portfolio ~$${(planVal(2048)/1e6).toFixed(1)}M. His CPP/OAS can start.`},
-    {year:2052,text:`<strong>🎉 Kseniya retires at 65.</strong> Portfolio ~$${(planVal(2052)/1e6).toFixed(1)}M (≈ $${(todays(planVal(2052),2052)/1e6).toFixed(1)}M today).`},
-  ];
-  document.getElementById('milestones-list').innerHTML = ms.map(m=>`
-    <div class="milestone"${m.year===retYear?' style="background:#f0f7f2"':''}>
-      <div class="milestone-dot"></div>
-      <div class="milestone-year">${m.year}</div>
-      <div class="milestone-text">${m.text}</div>
-    </div>`).join('');
 }
 
 // ============ SCENARIOS CHART ============
