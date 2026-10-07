@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vartazarov Family Finance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #f7f7f5;
+    --card: #ffffff;
+    --border: #e8e6e1;
+    --text: #1a1a18;
+    --muted: #6b6960;
+    --accent: #2d5a3d;
+    --accent2: #4a7c59;
+    --warn: #c17f2a;
+    --warn-bg: #fdf3e3;
+    --danger: #b23a48;
+    --danger-bg: #fceef0;
+    --blue: #2563a8;
+    --blue-bg: #eef3fb;
+    --purple: #6b3fa0;
+    --purple-bg: #f3eefb;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; }
+  .header { background: var(--card); border-bottom: 1px solid var(--border); padding: 16px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .logo { font-weight: 700; font-size: 17px; letter-spacing: -0.3px; }
+  .logo span { color: var(--accent); }
+  .header-right { color: var(--muted); font-size: 13px; }
+  .tabs { display: flex; gap: 2px; background: var(--card); border-bottom: 1px solid var(--border); padding: 0 28px; overflow-x: auto; }
+  .tab { padding: 13px 18px; cursor: pointer; font-size: 14px; font-weight: 500; color: var(--muted); border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.15s; user-select: none; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .main { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); margin-bottom: 16px; }
+  .card-title { font-weight: 600; font-size: 15px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  @media (max-width: 768px) { .grid-2,.grid-3,.grid-4 { grid-template-columns: 1fr; } .main { padding: 14px 12px; } }
+  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow); }
+  .stat-label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
+  .stat-value { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+  .stat-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .stat-green { color: var(--accent); }
+  .stat-warn { color: var(--warn); }
+  .stat-red { color: var(--danger); }
+  .stat-blue { color: var(--blue); }
+  .budget-row { display: flex; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--border); gap: 10px; }
+  .budget-row:last-child { border-bottom: none; }
+  .budget-cat { flex: 1; font-size: 14px; min-width: 0; }
+  .budget-cat-name { font-weight: 500; }
+  .budget-cat-sub { font-size: 11px; color: var(--muted); }
+  .budget-budget { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--muted); min-width: 70px; text-align: right; }
+  .budget-actual-wrap { min-width: 100px; }
+  .budget-actual { font-family: 'DM Mono', monospace; font-size: 13px; width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; text-align: right; background: var(--bg); outline: none; }
+  .budget-actual:focus { border-color: var(--accent); background: #fff; }
+  .budget-bar-wrap { flex: 1; min-width: 60px; max-width: 120px; }
+  .budget-bar-bg { background: var(--border); border-radius: 4px; height: 5px; }
+  .budget-bar-fill { height: 5px; border-radius: 4px; background: var(--accent2); transition: width 0.3s; }
+  .budget-bar-fill.over { background: var(--danger); }
+  .budget-delta { font-family: 'DM Mono', monospace; font-size: 11px; min-width: 55px; text-align: right; }
+  .delta-pos { color: var(--accent); }
+  .delta-neg { color: var(--danger); }
+  .banner { padding: 13px 16px; border-radius: var(--radius); font-size: 14px; margin-bottom: 16px; display: flex; gap: 10px; align-items: flex-start; line-height: 1.5; }
+  .banner-warn { background: var(--warn-bg); border: 1px solid #e6c97a; color: #7a4f00; }
+  .banner-info { background: var(--blue-bg); border: 1px solid #a8c5e8; color: var(--blue); }
+  .banner-ok { background: #eefaf2; border: 1px solid #99dcb4; color: #1a5c34; }
+  .banner-purple { background: var(--purple-bg); border: 1px solid #c4a8e8; color: var(--purple); }
+  .scenario-bar { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; align-items: center; }
+  .scenario-btn { padding: 7px 15px; border-radius: 20px; border: 1.5px solid var(--border); background: var(--card); cursor: pointer; font-size: 13px; font-weight: 500; color: var(--muted); transition: all 0.15s; }
+  .scenario-btn:hover { border-color: var(--accent2); color: var(--accent); }
+  .scenario-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+  .milestone { display: flex; gap: 12px; align-items: flex-start; padding: 11px 0; border-bottom: 1px solid var(--border); }
+  .milestone:last-child { border-bottom: none; }
+  .milestone-year { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 700; color: var(--accent); min-width: 38px; padding-top: 2px; }
+  .milestone-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); margin-top: 4px; flex-shrink: 0; }
+  .milestone-text { font-size: 14px; line-height: 1.5; }
+  .coast-card { background: var(--blue-bg); border: 1px solid #a8c5e8; border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
+  .ret-scenario-card { border: 2px solid var(--border); border-radius: var(--radius); padding: 14px 16px; cursor: pointer; background: var(--card); transition: all 0.15s; }
+  .ret-scenario-card:hover { border-color: var(--accent2); background: #f0f7f2; }
+  .ret-scenario-card.active { border-color: var(--accent); background: #f0f7f2; }
+  .rs-year { font-size: 26px; font-weight: 700; color: var(--accent); line-height: 1; }
+  .rs-ages { font-size: 12px; color: var(--muted); margin: 3px 0 4px; font-family: 'DM Mono', monospace; }
+  .rs-label { font-size: 13px; font-weight: 500; color: var(--text); }
+  .coast-title { font-weight: 700; font-size: 15px; color: var(--blue); margin-bottom: 12px; }
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .compare-table th { background: var(--bg); padding: 9px 12px; text-align: left; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--border); }
+  .compare-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr.highlight td { background: #f0f7f3; font-weight: 600; }
+  .mono { font-family: 'DM Mono', monospace; }
+  .chip { display: inline-block; padding: 2px 7px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .chip-green { background: #d4f1e0; color: #1a5c34; }
+  .chip-warn { background: #fde8c0; color: #7a4f00; }
+  .chip-blue { background: #d4e5f7; color: var(--blue); }
+  .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin: 22px 0 10px; }
+  input[type=number] { font-family: 'DM Mono', monospace; border: 1px solid var(--border); border-radius: 8px; padding: 7px 11px; font-size: 14px; outline: none; background: var(--bg); }
+  input[type=number]:focus { border-color: var(--accent); background: #fff; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .action-item { display: flex; gap: 13px; padding: 13px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+  .action-item:last-child { border-bottom: none; }
+  .action-num { width: 26px; height: 26px; background: var(--accent); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+  .action-num.warn { background: var(--warn); }
+  .action-num.blue { background: var(--blue); }
+  .action-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+  .action-desc { font-size: 13px; color: var(--muted); line-height: 1.55; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">🏡 <span>Vartazarov</span> Family Finance</div>
+  <div class="header-right" id="monthLabel">October 2026</div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('spending',this)">📊 This Month</div>
+  <div class="tab" onclick="showTab('retirement',this)">🎯 Retirement</div>
+  <div class="tab" onclick="showTab('scenarios',this)">⚖️ Scenarios</div>
+  <div class="tab" onclick="showTab('actions',this)">✅ Action List</div>
+  <div class="tab" onclick="showTab('invest',this)">💰 How to Invest</div>
+  <div class="tab" onclick="showTab('debt',this)">🔥 Debt Attack</div>
+</div>
+
+<!-- ========== TAB: SPENDING ========== -->
+<div id="tab-spending" class="tab-content active">
+<div class="main">
+
+  <div class="banner banner-warn" id="income-banner">
+    ⚠️ <span><strong>October transition month:</strong> Only Kseniya's income ($12,439 net/mo). Artemii returns ~November at $170K/yr = $9,708 net/mo (31.5% effective rate, AB). Combined Nov+: $22,147/mo.</span>
+  </div>
+
+  <div class="grid-4" style="margin-bottom:16px">
+    <div class="stat-card">
+      <div class="stat-label">Monthly Budget</div>
+      <div class="stat-value" id="total-budget">$12,060</div>
+      <div class="stat-sub">all categories</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Entered Actuals</div>
+      <div class="stat-value stat-blue" id="total-actual">$0</div>
+      <div class="stat-sub">so far this month</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Budget Remaining</div>
+      <div class="stat-value stat-green" id="total-remaining">$12,060</div>
+      <div class="stat-sub">budget left</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Savings (Nov+)</div>
+      <div class="stat-value stat-blue" id="savings-val">~$12,740</div>
+      <div class="stat-sub">combined net Nov+ − spend</div>
+    </div>
+  </div>
+
+  <div class="scenario-bar">
+    <span style="font-size:13px;color:var(--muted)">Toggle:</span>
+    <div class="scenario-btn active" id="btn-mazda" onclick="toggleCar('mazda',this)">🚗 Mazda Lease incl.</div>
+    <div class="scenario-btn active" id="btn-tesla" onclick="toggleCar('tesla',this)">⚡ Tesla Financing incl.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📌 Fixed Monthly Expenses</div>
+    <div id="fixed-rows"></div>
+    <div style="margin-top:12px;padding-top:12px;border-top:2px solid var(--border);display:flex;justify-content:space-between;font-weight:700;font-size:15px">
+      <span>Fixed Total</span><span class="mono" id="fixed-total-display">$7,466</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🛒 Variable Spending <span style="font-size:12px;color:var(--muted);font-weight:400;margin-left:8px">← enter actuals weekly</span></div>
+    <div id="variable-rows"></div>
+    <div style="margin-top:12px;padding-top:12px;border-top:2px solid var(--border);display:flex;justify-content:space-between;font-weight:700;font-size:15px">
+      <span>Variable Total</span><span class="mono" id="variable-total-display">$2,207 budget / $0 actual</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 Other Regular</div>
+    <div id="other-rows"></div>
+  </div>
+
+  <div style="background:var(--accent);color:white;border-radius:var(--radius);padding:18px 22px;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div>
+      <div style="font-size:12px;opacity:0.8">Total Monthly Spend</div>
+      <div style="font-size:28px;font-weight:700;letter-spacing:-0.5px" id="grand-total-display">$12,060</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:12px;opacity:0.8">Savings (Nov onward)</div>
+      <div style="font-size:28px;font-weight:700;letter-spacing:-0.5px" id="savings-total-display">$12,740/mo</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">💡 Spending Insights from 4 Months of Statements</div>
+    <div style="font-size:14px;line-height:1.8">
+      <p style="margin-bottom:6px">📦 <strong>Amazon</strong> ~$600/mo avg across both WS and RBC cards. ~2-3 purchases/week. The 48-hour rule before checkout would save ~$2,400/yr.</p>
+      <p style="margin-bottom:6px">👗 <strong>Fashion & Beauty</strong> ~$400/mo avg (BENDA BILI, Pandora, Sephora, Nike). US trip in Aug spiked to ~$1,020. Budget $400 for steady months.</p>
+      <p style="margin-bottom:6px">☕ <strong>Nespresso</strong> $90/mo avg — primarily in-store. Budget 1 order/month.</p>
+      <p style="margin-bottom:6px">🌿 <strong>Cannabis</strong> avg $86/mo across 3-4 purchases (Value Buds, In N Out Cannabis). Tracked for awareness.</p>
+      <p style="margin-bottom:6px">🐾 <strong>Pets</strong>: Tail Blazers food + FETCH dog insurance (~$362 quarterly). Budgeted $160/mo.</p>
+      <p>🇺🇦 <strong>Ukraine donations</strong> (Portmone + Sternenko): ~$130/mo avg. Kept as a values line item.</p>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ========== TAB: RETIREMENT ========== -->
+<div id="tab-retirement" class="tab-content">
+<div class="main">
+
+  <div class="grid-2" style="margin-bottom:16px">
+    <div class="stat-card">
+      <div class="stat-label">Total Portfolio Today</div>
+      <div class="stat-value stat-green">$562,094</div>
+      <div class="stat-sub">RRSP $416K + TFSA $146K (Kseniya + Artemii)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Ages Today</div>
+      <div class="stat-value">39 / 43</div>
+      <div class="stat-sub">Kseniya 39 · Artemii 43 · Oct 2026</div>
+    </div>
+  </div>
+
+  <!-- SCENARIO SELECTOR -->
+  <div class="section-label">Choose Your Retirement Scenario</div>
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px" id="ret-scenario-grid">
+    <div class="ret-scenario-card" id="rs-2039" onclick="setScenario('2039',this)">
+      <div class="rs-year">2039</div>
+      <div class="rs-ages">K52 · A56</div>
+      <div class="rs-label">Kseniya semi-retires</div>
+    </div>
+    <div class="ret-scenario-card" id="rs-2042" onclick="setScenario('2042',this)">
+      <div class="rs-year">2042</div>
+      <div class="rs-ages">K55 · A59</div>
+      <div class="rs-label">Both retire at ~55</div>
+    </div>
+    <div class="ret-scenario-card active" id="rs-2043" onclick="setScenario('2043',this)">
+      <div class="rs-year">2043</div>
+      <div class="rs-ages">K56 · A60</div>
+      <div class="rs-label">✅ Recommended — A retires at 60</div>
+    </div>
+    <div class="ret-scenario-card" id="rs-custom" onclick="setScenario('custom',this)">
+      <div class="rs-year" id="rs-custom-yr">Custom</div>
+      <div class="rs-ages"><input type="number" id="custom-year-input" value="2045" min="2027" max="2060" style="width:70px;font-size:13px;border:1px solid var(--border);border-radius:6px;padding:2px 6px;text-align:center" onclick="event.stopPropagation()" onchange="setScenario('custom',document.getElementById('rs-custom'))"></div>
+      <div class="rs-label">Pick your year</div>
+    </div>
+  </div>
+
+  <!-- WHAT IT MEANS PANEL -->
+  <div id="ret-summary-panel" style="background:var(--accent);color:white;border-radius:var(--radius);padding:20px;margin-bottom:16px">
+    <div style="font-size:11px;opacity:.7;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">YOUR RETIREMENT PICTURE</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:14px">
+      <div>
+        <div style="font-size:11px;opacity:.7;margin-bottom:4px">RETIRE IN</div>
+        <div style="font-size:28px;font-weight:700" id="rsp-year">2043</div>
+        <div style="font-size:12px;opacity:.8" id="rsp-ages">Kseniya 56 · Artemii 60</div>
+      </div>
+      <div>
+        <div style="font-size:11px;opacity:.7;margin-bottom:4px">PORTFOLIO AT RETIREMENT</div>
+        <div style="font-size:28px;font-weight:700" id="rsp-portfolio">$4.35M</div>
+        <div style="font-size:12px;opacity:.8" id="rsp-years-away">17 years away</div>
+      </div>
+      <div>
+        <div style="font-size:11px;opacity:.7;margin-bottom:4px">MONTHLY INCOME @ 3.5%</div>
+        <div style="font-size:28px;font-weight:700" id="rsp-income">$12,679/mo</div>
+        <div style="font-size:12px;opacity:.8" id="rsp-income-note">tax-free from invested portfolio</div>
+      </div>
+    </div>
+    <div id="rsp-note" style="background:rgba(255,255,255,0.15);border-radius:8px;padding:10px;font-size:13px;line-height:1.5"></div>
+  </div>
+
+  <div class="grid-3" id="ret-metrics" style="margin-bottom:16px"></div>
+
+  <div class="coast-card" id="coast-card"></div>
+
+  <div id="ret-mortgage-banner" class="banner banner-warn">
+    🏠 <strong>Mortgage note:</strong> Payoff Dec 2041. At retirement in 2043 you'll be mortgage-free — no housing debt to factor in. Portfolio income covers everything.
+  </div>
+
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+    <label style="font-size:13px;color:var(--muted)">Portfolio today ($):</label>
+    <input type="number" id="portfolioVal" value="562094" style="width:130px" onchange="updateRetirement(retYear, RET_SCENARIOS['2043'])">
+  </div>
+
+  <div class="card">
+    <div class="card-title">📈 Portfolio Projection 2026–2050</div>
+    <div style="height:320px"><canvas id="retChart"></canvas></div>
+    <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:16px;font-size:12px;color:var(--muted)">
+      <span><span class="legend-dot" style="background:#2d5a3d"></span> Optimised ($10K/mo)</span>
+      <span><span class="legend-dot" style="background:#4a7c59"></span> Current pace ($5K/mo)</span>
+      <span><span class="legend-dot" style="background:#94a3b8"></span> CoastFIRE (zero contribs)</span>
+      <span><span style="background:#c17f2a;width:18px;height:2px;border-radius:0;display:inline-block;vertical-align:middle;margin-right:2px"></span> Target line</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">💸 Retirement Spending Plan</div>
+    <div class="grid-2">
+      <div>
+        <div class="section-label">2038–2041 (with mortgage $4,332/mo)</div>
+        <div class="budget-row"><span class="budget-cat"><span class="budget-cat-name">Mortgage payment</span></span><span class="budget-budget mono">$4,332</span></div>
+        <div class="budget-row"><span class="budget-cat"><span class="budget-cat-name">Groceries & living</span></span><span class="budget-budget mono">$3,000</span></div>
+        <div class="budget-row"><span class="budget-cat"><span class="budget-cat-name">Travel & leisure</span></span><span class="budget-budget mono">$2,500</span></div>
+        <div class="budget-row"><span class="budget-cat"><span class="budget-cat-name">Health & wellness</span></span><span class="budget-budget mono">$1,500</span></div>
+        <div class="budget-row"><span class="budget-cat"><span class="budget-cat-name">Cars & transport</span></span><span class="budget-budget mono">$1,000</span></div>
+        <div class="budget-row"><span class="budget-cat"><span class="budget-cat-name">Misc, gifts, extras</span></span><span class="budget-budget mono">$700</span></div>
+        <div class="budget-row" style="font-weight:700"><span class="budget-cat">Total / month</span><span class="budget-budget mono">$13,032</span></div>
+      </div>
+      <div>
+        <div class="section-label">2042+ (mortgage-free)</div>
+        <div class="budget-row"><span class="budget-cat"><span class="budget-cat-name">Housing (taxes/HOA)</span></span><span class="budget-budget mono">$800</span></div>
+        <div class="budget-row"><span class="budget-cat"><span class="budget-cat-name">Groceries & living</span></span><span class="budget-budget mono">$3,000</span></div>
+        <div class="budget-row"><span class="budget-cat"><span class="budget-cat-name">Travel & leisure</span></span><span class="budget-budget mono">$4,000</span></div>
+        <div class="budget-row"><span class="budget-cat"><span class="budget-cat-name">Health & wellness</span></span><span class="budget-budget mono">$2,000</span></div>
+        <div class="budget-row"><span class="budget-cat"><span class="budget-cat-name">Cars & transport</span></span><span class="budget-budget mono">$800</span></div>
+        <div class="budget-row"><span class="budget-cat"><span class="budget-cat-name">Misc, gifts, extras</span></span><span class="budget-budget mono">$1,400</span></div>
+        <div class="budget-row" style="font-weight:700"><span class="budget-cat">Total / month</span><span class="budget-budget mono">$12,000</span></div>
+      </div>
+    </div>
+    <div class="banner banner-ok" style="margin-top:14px">
+      🏛️ <strong>CPP + OAS at 65 (~2048):</strong> ~$2,981/mo combined in today's dollars. Reduces withdrawal needs significantly — portfolio can keep growing while you supplement with government income.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🗓️ Milestones</div>
+    <div id="milestones-list"></div>
+  </div>
+
+</div>
+</div>
+
+<!-- ========== TAB: SCENARIOS ========== -->
+<div id="tab-scenarios" class="tab-content">
+<div class="main">
+
+  <div class="grid-2" style="margin-bottom:16px">
+
+    <div class="card">
+      <div class="card-title">🚗 Mazda Lease — Exit via LeaseBuster?</div>
+      <p style="font-size:14px;line-height:1.6;color:var(--muted);margin-bottom:14px">
+        <strong>$479.25 × 2 payments/mo = $958.50/mo.</strong> LeaseBuster.ca lets someone take over your lease — you walk away at no penalty. Cash freed goes to RRSP.
+      </p>
+      <table class="compare-table">
+        <tr><th>Metric</th><th>Keep Lease</th><th>Exit (LeaseBuster)</th></tr>
+        <tr><td>Monthly car cost</td><td class="mono">$958</td><td class="mono">$0</td></tr>
+        <tr><td>→ RRSP extra/mo</td><td class="mono">—</td><td class="mono">+$958</td></tr>
+        <tr><td>RRSP tax refund/yr</td><td class="mono">—</td><td class="mono">~$5,517 (48%)</td></tr>
+        <tr><td>Buyout/exit penalty</td><td class="mono">—</td><td class="mono">$0 (transfer)</td></tr>
+        <tr class="highlight"><td>Portfolio at 2038</td><td class="mono" id="mazda-keep">~$1.72M</td><td class="mono" id="mazda-exit">~$1.99M</td></tr>
+        <tr><td>Gain from exit</td><td colspan="2" class="mono" id="mazda-gain">+~$270K by 2038</td></tr>
+      </table>
+      <div style="margin-top:12px;font-size:13px;color:var(--muted)">
+        💡 Exit now = ~$270K more at retirement. That's 3 full years of retirement living expenses.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⚡ Tesla Financing — Pay Off or Keep?</div>
+      <p style="font-size:14px;line-height:1.6;color:var(--muted);margin-bottom:14px">
+        Tesla financing <strong>$409.10/mo confirmed</strong>. The math depends on your interest rate — check the Tesla app or financing paperwork for the rate.
+      </p>
+      <table class="compare-table">
+        <tr><th>Metric</th><th>Keep Financing</th><th>Pay It Off</th></tr>
+        <tr><td>Monthly payment</td><td class="mono">$409</td><td class="mono">$0 (one-time)</td></tr>
+        <tr><td>WS Summit earns</td><td class="mono">~7%/yr</td><td class="mono">—</td></tr>
+        <tr><td>Tesla rate</td><td class="mono">4.5% confirmed</td><td class="mono">—</td></tr>
+        <tr><td>WS Summit vs Tesla spread</td><td class="mono">+2.5% investing wins</td><td class="mono">—</td></tr>
+        <tr class="highlight"><td>Recommendation</td><td colspan="2">✅ Keep financing — invest the $409 instead</td></tr>
+      </table>
+      <div class="banner banner-ok" style="margin-top:12px">
+        ✅ <strong>Keep the Tesla financing.</strong> At 4.5% rate vs ~7% WS Summit: investing beats paying off by 2.5%/yr. Just make the monthly payments and put any extra cash into RRSP/TFSA.
+      </div>
+    </div>
+
+  </div>
+
+  <div class="card">
+    <div class="card-title">🏠 Mortgage Prepayment — Should You Pay Extra?</div>
+    <div class="grid-2">
+      <div>
+        <div class="section-label">Your Mortgage Facts</div>
+        <div class="budget-row"><span class="budget-cat">Balance</span><span class="budget-budget mono">$533,446</span></div>
+        <div class="budget-row"><span class="budget-cat">Fixed rate</span><span class="budget-budget mono">5.56%</span></div>
+        <div class="budget-row"><span class="budget-cat">Monthly payment</span><span class="budget-budget mono">$4,332</span></div>
+        <div class="budget-row"><span class="budget-cat">Renewal</span><span class="budget-budget mono">Dec 15, 2028</span></div>
+        <div class="budget-row"><span class="budget-cat">Full payoff</span><span class="budget-budget mono">~Dec 2041</span></div>
+        <div class="budget-row"><span class="budget-cat">Max prepay/yr</span><span class="budget-budget mono">$114,888</span></div>
+      </div>
+      <div>
+        <div class="section-label">Invest vs Prepay Math</div>
+        <div class="budget-row"><span class="budget-cat">WS Summit return</span><span class="budget-budget mono" style="color:var(--accent)">~7.0%</span></div>
+        <div class="budget-row"><span class="budget-cat">Mortgage cost (after-tax)</span><span class="budget-budget mono">5.56%</span></div>
+        <div class="budget-row"><span class="budget-cat">Spread (invest wins by)</span><span class="budget-budget mono" style="color:var(--accent)">+1.44%</span></div>
+        <div class="budget-row"><span class="budget-cat">$114K prepaid saves</span><span class="budget-budget mono">$6,338/yr interest</span></div>
+        <div class="budget-row"><span class="budget-cat">$114K invested earns</span><span class="budget-budget mono">$7,980/yr (7%)</span></div>
+        <div class="budget-row" style="font-weight:700"><span class="budget-cat">Net advantage</span><span class="budget-budget" style="color:var(--accent);font-weight:700">INVEST +$1,642/yr</span></div>
+      </div>
+    </div>
+    <div class="banner banner-ok" style="margin-top:14px">
+      ✅ <strong>Don't prepay aggressively.</strong> Invest surplus in RRSP/TFSA instead. At renewal (Dec 2028), reassess — if new rate exceeds 6.5%, consider a lump-sum payment. The $153K bridge (retirement 2038 to payoff 2041) is already factored into your $2.8M target.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">💰 RRSP Optimization — Biggest Lever You Have</div>
+    <div class="grid-2">
+      <div>
+        <div class="section-label">Kseniya — $233K salary (48% marginal)</div>
+        <div class="budget-row"><span class="budget-cat">RRSP room (est.)</span><span class="budget-budget mono">~$30K/yr</span></div>
+        <div class="budget-row"><span class="budget-cat">Tax refund per $1K</span><span class="budget-budget mono">$480 back</span></div>
+        <div class="budget-row"><span class="budget-cat">Max annual tax refund</span><span class="budget-budget mono">~$14,400</span></div>
+        <div class="budget-row"><span class="budget-cat">Current RRSP</span><span class="budget-budget mono">$275,503</span></div>
+        <div class="budget-row"><span class="budget-cat">Current TFSA</span><span class="budget-budget mono">$101,591</span></div>
+      </div>
+      <div>
+        <div class="section-label">Artemii — $170K salary (46% marginal)</div>
+        <div class="budget-row"><span class="budget-cat">RRSP room (est.)</span><span class="budget-budget mono">~$30K/yr</span></div>
+        <div class="budget-row"><span class="budget-cat">Tax refund per $1K</span><span class="budget-budget mono">$460 back</span></div>
+        <div class="budget-row"><span class="budget-cat">Max annual tax refund</span><span class="budget-budget mono">~$13,800</span></div>
+        <div class="budget-row"><span class="budget-cat">Current RRSP</span><span class="budget-budget mono">$141,000</span></div>
+        <div class="budget-row"><span class="budget-cat">Current TFSA</span><span class="budget-budget mono">$44,000</span></div>
+      </div>
+    </div>
+    <div class="banner banner-purple" style="margin-top:14px">
+      🧩 <strong>Priority order:</strong> ① Max both RRSPs — 48% instant return. ② TFSA next for tax-free growth + flexibility. ③ Any remainder to WS non-registered. Combined RRSP room ~$60K/yr = ~$28,800 tax savings — more than your mortgage interest.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📊 Four Scenarios: Portfolio Value at 2038</div>
+    <div style="height:280px"><canvas id="scenarioChart"></canvas></div>
+    <div style="margin-top:14px;font-size:13px;color:var(--muted);line-height:1.6">
+      All scenarios start at $562K. Return assumption 7%/yr (WS Summit managed portfolios).
+    </div>
+  </div>
+
+  <!-- RETIRE AT 60 SCENARIO -->
+  <div class="card">
+    <div class="card-title">⏰ Retire at 60 / 56 Scenario — Artemii 60, Kseniya 56 (2043)</div>
+    <div class="banner banner-info" style="margin-bottom:14px">
+      📅 <strong>17 more years of investing</strong> (2026 → 2043). One extra year vs "retire at 55" adds ~$367K to the portfolio.
+    </div>
+    <table class="compare-table">
+      <tr><th>Scenario</th><th>Year</th><th>Ages</th><th>Portfolio</th><th>Monthly Income @ 3.5%</th></tr>
+      <tr><td>Early (prior plan)</td><td class="mono">2038</td><td>K52 · A56</td><td class="mono">~$2.3M</td><td class="mono">~$6,700/mo</td></tr>
+      <tr><td>Kseniya semi-retires</td><td class="mono">2039</td><td>K52 · A56 (A keeps working)</td><td class="mono">~$3.0M</td><td class="mono">~$8,750/mo</td></tr>
+      <tr><td>Retire at 55 (Kseniya)</td><td class="mono">2042</td><td>K55 · A59</td><td class="mono">~$3.98M</td><td class="mono">~$11,600/mo</td></tr>
+      <tr class="highlight"><td><strong>✅ Retire at 60/56</strong></td><td class="mono"><strong>2043</strong></td><td><strong>K56 · A60</strong></td><td class="mono"><strong>~$4.35M</strong></td><td class="mono"><strong>~$12,700/mo</strong></td></tr>
+    </table>
+    <div class="grid-2" style="margin-top:14px;gap:12px">
+      <div style="background:var(--blue-bg);border-radius:8px;padding:14px">
+        <div style="font-weight:600;margin-bottom:6px">Why wait to 60?</div>
+        <div style="font-size:13px;color:var(--muted)">$4.35M portfolio = $12,700/mo forever without touching principal. Mortgage is fully paid off by 2041 (2 years before retirement) so you'd arrive debt-free and cash-flow-rich. CPP + OAS at 65 (~$2,981/mo) is a further bonus on top.</div>
+      </div>
+      <div style="background:#f0f9f0;border:1px solid #b5d9be;border-radius:8px;padding:14px">
+        <div style="font-weight:600;margin-bottom:6px">Kseniya's early exit option</div>
+        <div style="font-size:13px;color:var(--muted)">At 52 (2039), if you want to stop working full-time, the portfolio would be ~$3M — enough to cover ~$8,750/mo with Artemii still earning. You could work part-time, pivot to nutrition coaching, or take a full break while he finishes the last 4 years.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CAR RECOMMENDATION -->
+  <div class="card">
+    <div class="card-title">🚗 Car Strategy — If You Exit the Mazda</div>
+    <div class="banner banner-warn" style="margin-bottom:14px">
+      ⚠️ If LeaseBuster works but requires a cash incentive to the buyer, budget $2K–$5K as a sweetener — still worth it vs 28 more months of $958/mo = $26,824.
+    </div>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:14px">You still need a 2nd car. Here are the options ranked by financial impact:</p>
+    <table class="compare-table">
+      <tr><th>Option</th><th>Monthly Cost</th><th>Upfront</th><th>Verdict</th></tr>
+      <tr class="highlight"><td>⭐ Used EV (Nissan Leaf / Chevy Bolt / used Tesla 3)</td><td class="mono">~$0–$300</td><td class="mono">$15–25K cash or finance</td><td>Best long-term — gas savings + low maint</td></tr>
+      <tr><td>Used reliable ICE (Civic, Corolla, RAV4)</td><td class="mono">~$200–$350</td><td class="mono">$20–28K</td><td>Solid backup — $600/mo cheaper than Mazda lease</td></tr>
+      <tr><td>New budget car (Hyundai Elantra, Kia Forte)</td><td class="mono">~$400–$500</td><td class="mono">$0 down possible</td><td>Fine but you're back near Mazda cost</td></tr>
+      <tr><td>New lease (any car)</td><td class="mono">~$600–$900</td><td class="mono">Low upfront</td><td>❌ Avoid — same problem, different car</td></tr>
+    </table>
+    <div style="background:var(--accent);color:white;border-radius:8px;padding:14px;margin-top:12px">
+      <div style="font-weight:600;margin-bottom:6px">💡 Top recommendation: Used Chevy Bolt or Nissan Leaf</div>
+      <div style="font-size:13px;opacity:.9">2021–2023 Bolt EV: $18–24K in Alberta. No gas (~$120/mo savings). Low maintenance. You already have home charging with the Tesla. Finance at 6.5% = ~$350/mo on $20K — saves you $600/mo vs Mazda lease. Over 28 remaining lease months = $16,800 in your pocket. Put that straight into RRSP.</div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ========== TAB: ACTIONS ========== -->
+<div id="tab-actions" class="tab-content">
+<div class="main">
+
+  <div class="banner banner-ok">
+    💪 <strong>Strong position.</strong> $562K invested, $403K combined income, $22,147/mo net in November. These moves get you to financial freedom by 2038.
+  </div>
+
+  <div class="section-label">🔴 This Month — October 2026</div>
+  <div class="card">
+    <div class="action-item">
+      <div class="action-num warn">1</div>
+      <div>
+        <div class="action-title">Watch October cash flow — buffer is ~$2,140</div>
+        <div class="action-desc">$12,439 Kseniya income minus ~$11,312 spend = ~$1,127 surplus this month (Artemii starts November). Chequing has $15,963 as buffer. Don't dip into investments.</div>
+      </div>
+    </div>
+    <div class="action-item">
+      <div class="action-num warn">2</div>
+      <div>
+        <div class="action-title">✅ Tesla rate confirmed at 4.5% — keep financing</div>
+        <div class="action-desc">At 4.5% vs WS Summit's 7%, the 2.5% spread favors keeping the loan and investing the difference. $409/mo payment, do not pay off early. Put extra cash into RRSP instead.</div>
+      </div>
+    </div>
+    <div class="action-item">
+      <div class="action-num warn">3</div>
+      <div>
+        <div class="action-title">Start Artemii's RRSP contribution plan for November</div>
+        <div class="action-desc">Set up $2,550/mo auto-contribution from Day 1 of new job. At 46% marginal rate: ~$14,076 refund/yr. See 💰 How to Invest tab for the full allocation plan.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">🟡 November — Two Incomes Return</div>
+  <div class="card">
+    <div class="action-item">
+      <div class="action-num">4</div>
+      <div>
+        <div class="action-title">Set up RRSP auto-invest: $2,707 Kseniya + $2,550 Artemii = $5,257/mo</div>
+        <div class="action-desc">$63K/yr into RRSP → ~$29,676 combined annual tax refund. Reinvest refunds into WS non-registered or next year's RRSP. See 💰 How to Invest tab for exact steps.</div>
+      </div>
+    </div>
+    <div class="action-item">
+      <div class="action-num">5</div>
+      <div>
+        <div class="action-title">Investigate Mazda lease exit via LeaseBuster.ca</div>
+        <div class="action-desc">List your Mazda on leasebuster.ca (free). Someone takes over your lease. You're out with zero penalty, saving $958/mo → redirected to RRSP. Gains ~$270K extra by 2038 vs keeping the lease.</div>
+      </div>
+    </div>
+    <div class="action-item">
+      <div class="action-num">6</div>
+      <div>
+        <div class="action-title">Max TFSA contributions for both ($14,000 combined, 2026 limit)</div>
+        <div class="action-desc">Check remaining TFSA room on CRA My Account (MyAccount → TFSA → room available). TFSA growth is completely tax-free forever — second priority after RRSP. Put it in WS Summit for managed growth.</div>
+      </div>
+    </div>
+    <div class="action-item">
+      <div class="action-num">7</div>
+      <div>
+        <div class="action-title">Contribute $2,500/yr to Margo's RESP (collect $500 CESG grant)</div>
+        <div class="action-desc">Government matches 20% on first $2,500 = $500 free per year. Lifetime max $7,200/child. That's $208/mo — an automatic 20% return. Provide RESP account details to update the snapshot.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">🟢 Ongoing Monthly Habits</div>
+  <div class="card">
+    <div class="action-item">
+      <div class="action-num blue">8</div>
+      <div>
+        <div class="action-title">Weekly: 5 min in "This Month" tab entering actuals</div>
+        <div class="action-desc">Every Sunday, scan your WS + RBC + PC statements and enter last week's variable spending. The bar charts show instantly if you're on track. Share this link with Artemii — works on any device.</div>
+      </div>
+    </div>
+    <div class="action-item">
+      <div class="action-num blue">9</div>
+      <div>
+        <div class="action-title">Amazon 48-hour rule + Fashion $300 soft cap</div>
+        <div class="action-desc">Amazon averaged $600/mo. Even cutting to $400 saves $2,400/yr → RRSP → $4,608 tax-effective. Fashion averaged $400-553/mo — a $300 mental cap saves ~$1,200/yr extra. Small habit, big compound effect.</div>
+      </div>
+    </div>
+    <div class="action-item">
+      <div class="action-num blue">10</div>
+      <div>
+        <div class="action-title">Mortgage renewal Dec 2028 — shop rates starting June 2028</div>
+        <div class="action-desc">Balance at renewal ~$414K. Lock in a rate 6 months ahead. If new rate drops to 4-4.5%, consider accelerating principal. If rates stay high (>5.5%), keep investing strategy. Revisit prepayment math then.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">📊 Financial Snapshot — October 2026</div>
+  <div class="card">
+    <table class="compare-table">
+      <tr><th>Account</th><th>Balance</th><th>Notes</th></tr>
+      <tr><td>Kseniya RRSP (WS Summit)</td><td class="mono">$275,503</td><td>+41% all-time, managed portfolio</td></tr>
+      <tr><td>Kseniya TFSA (WS)</td><td class="mono">$101,591</td><td>Summit $83.6K + TFSA $17.9K</td></tr>
+      <tr><td>Artemii RRSP (WS)</td><td class="mono">$141,000</td><td>Wealthsimple</td></tr>
+      <tr><td>Artemii TFSA (WS)</td><td class="mono">$44,000</td><td>Wealthsimple</td></tr>
+      <tr class="highlight"><td>Total Investments</td><td class="mono">$562,094</td><td>78% of CoastFIRE number at $2.8M target</td></tr>
+      <tr><td>Chequing (Kseniya)</td><td class="mono">$17,264</td><td>+ Vacation $1,301</td></tr>
+      <tr><td>Mortgage</td><td class="mono">($533,446)</td><td>5.56% fixed, Dec 2028 renewal</td></tr>
+      <tr><td>WS CC balance</td><td class="mono">~$0</td><td>Paid in full ✓</td></tr>
+      <tr><td>RESP (Margo)</td><td class="mono">TBD</td><td>Please provide details to update</td></tr>
+    </table>
+  </div>
+
+</div>
+</div>
+
+<!-- ===== HOW TO INVEST TAB ===== -->
+<div id="tab-invest" class="tab-content">
+<div class="main">
+
+  <div class="banner banner-ok">
+    💡 <strong>You have ~$10,835/mo surplus starting November.</strong> With Kseniya's confirmed RRSP room, most of this goes straight to tax-sheltered accounts — here's the priority order.
+  </div>
+
+  <!-- PRIORITY 1: RRSP -->
+  <div class="section-label">🥇 Priority 1 — RRSP (Biggest Win)</div>
+  <div class="card">
+    <p style="margin-bottom:14px;color:var(--muted);font-size:14px">RRSP reduces your <em>taxable income</em> — the government effectively pays back ~48% of Kseniya's contributions and ~46% of Artemii's as a tax refund every spring. This is free money.</p>
+    <table class="budget-table">
+      <thead><tr><th>Who</th><th>Monthly</th><th>Annual</th><th>Tax Refund</th><th>Where</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Kseniya RRSP</strong></td><td class="mono" style="color:var(--accent)">$6,221/mo</td><td class="mono">$74,654/yr <span style="font-size:11px;color:var(--blue)">(CRA confirmed)</span></td><td class="mono" style="color:var(--accent)">~$35,800 back</td><td>WS RRSP → Growth ETF</td></tr>
+        <tr><td><strong>Artemii RRSP</strong></td><td class="mono" style="color:var(--accent)">$2,550/mo</td><td class="mono">$30,600/yr <span style="font-size:11px;color:var(--muted)">(est — update when CRA confirmed)</span></td><td class="mono" style="color:var(--accent)">~$14,076 back</td><td>WS RRSP → Growth ETF</td></tr>
+        <tr style="background:var(--blue-bg)"><td><strong>Combined</strong></td><td class="mono"><strong>$8,771/mo</strong></td><td class="mono"><strong>$105,254/yr</strong></td><td class="mono" style="color:var(--blue)"><strong>~$49,876/yr refund</strong></td><td><span style="font-size:11px;color:var(--muted)">pending Artemii CRA</span></td></tr>
+      </tbody>
+    </table>
+    <div style="background:var(--warn-bg);border:1px solid #e8c878;border-radius:8px;padding:12px;margin-top:12px;font-size:13px">
+      ⚡ <strong>Action:</strong> In WealthSimple → RRSP → Set up automatic monthly transfer of $6,221 (Kseniya — CRA confirmed $74,654 room) and $2,550 (Artemii — update once you confirm his CRA limit). Choose <strong>WS Core Growth</strong> portfolio. Do this in November when Artemii's income starts.
+    </div>
+  </div>
+
+  <!-- PRIORITY 2: TFSA -->
+  <div class="section-label">🥈 Priority 2 — TFSA (Tax-Free Forever)</div>
+  <div class="card">
+    <p style="margin-bottom:14px;color:var(--muted);font-size:14px">TFSA growth is completely tax-free — no tax on gains, dividends, or withdrawals. You can withdraw anytime without penalty. 2026 annual limit: $7,000 each, but accumulated unused room can be much higher.</p>
+    <table class="budget-table">
+      <thead><tr><th>Who</th><th>Monthly</th><th>Remaining 2026 Room</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Kseniya TFSA</strong></td><td class="mono" style="color:var(--blue)">$693/mo</td><td class="mono">$8,325.40 remaining <span style="font-size:11px;color:var(--muted)">(of $13,687.56)</span></td><td>Already contributed $5,362.16 in 2026</td></tr>
+        <tr><td><strong>Artemii TFSA</strong></td><td class="mono" style="color:var(--blue)">$583/mo</td><td class="mono">$7,000/yr <span style="font-size:11px;color:var(--muted)">(est)</span></td><td>Confirm on CRA MyAccount</td></tr>
+        <tr style="background:var(--blue-bg)"><td><strong>Combined</strong></td><td class="mono"><strong>$1,276/mo</strong></td><td class="mono"></td><td><span style="font-size:11px;color:var(--muted)">pending Artemii CRA confirmation</span></td></tr>
+      </tbody>
+    </table>
+    <div style="background:var(--warn-bg);border:1px solid #e8c878;border-radius:8px;padding:12px;margin-top:12px;font-size:13px">
+      ✅ <strong>Kseniya's actual 2026 TFSA room:</strong> CRA limit $13,687.56 − $5,362.16 already contributed = <strong>$8,325.40 remaining</strong>. At $693/mo you'll max it out by end of 2026 (about 12 months). The CRA Warning on MyAccount is likely because contributions were recent and CRA's data lags — you're fine as long as total 2026 deposits don't exceed $13,687.56.<br><br>
+      ⚡ <strong>Action:</strong> WealthSimple → TFSA → Automatic monthly deposit $693 (Kseniya) / $583 (Artemii — confirm his room). WS Growth ETF.
+    </div>
+  </div>
+
+  <!-- MONTHLY ALLOCATION SUMMARY -->
+  <div class="section-label">📊 Your Monthly $10,835 Allocation</div>
+  <div class="card">
+    <table class="budget-table">
+      <thead><tr><th>Bucket</th><th>Monthly</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>RRSP (Kseniya + Artemii)</td><td class="mono" style="color:var(--accent)">$8,771</td><td>Tax-sheltered retirement — get ~$50K refund/yr combined</td></tr>
+        <tr><td>TFSA (Kseniya + Artemii)</td><td class="mono" style="color:var(--blue)">$1,276</td><td>Tax-free growth — accessible anytime</td></tr>
+        <tr><td>RESP (Margo)</td><td class="mono" style="color:var(--purple)">$208</td><td>$500 free CESG grant/yr from government</td></tr>
+        <tr><td>Emergency / Float</td><td class="mono">$2,000</td><td>Travel, home repairs, irregular bills</td></tr>
+        <tr style="background:var(--blue-bg)"><td><strong>Total Invested + Saved</strong></td><td class="mono"><strong>$12,255</strong></td><td><span style="font-size:12px;color:var(--muted)">Updates once Artemii's CRA limits confirmed</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- THE TAX REFUND BONUS -->
+  <div class="section-label">🎁 The ~$49,876 Tax Refund — Where Does It Go?</div>
+  <div class="card">
+    <p style="margin-bottom:14px;color:var(--muted);font-size:14px">Every spring (March–April) CRA sends you a combined ~$49,876 refund from your RRSP contributions (Kseniya ~$35,800 + Artemii ~$14,076). <strong>You're not "losing" this money</strong> — it comes back and gets reinvested. Here's the exact flow:</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
+      <div style="border:2px solid var(--accent);border-radius:8px;padding:12px;text-align:center">
+        <div style="font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.5px;margin-bottom:6px">Step 1 — Monthly</div>
+        <div style="font-size:18px;font-weight:700;color:var(--accent)">$8,771/mo</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">Auto-invest into RRSP (both accounts)</div>
+      </div>
+      <div style="border:2px solid var(--blue);border-radius:8px;padding:12px;text-align:center">
+        <div style="font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.5px;margin-bottom:6px">Step 2 — Each Spring</div>
+        <div style="font-size:18px;font-weight:700;color:var(--blue)">~$49,876</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">Tax refund arrives from CRA</div>
+      </div>
+      <div style="border:2px solid var(--purple);border-radius:8px;padding:12px;text-align:center">
+        <div style="font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.5px;margin-bottom:6px">Step 3 — Reinvest</div>
+        <div style="font-size:18px;font-weight:700;color:var(--purple)">→ TFSA or Non-Reg</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">Deposit refund into WS TFSA or non-registered</div>
+      </div>
+    </div>
+    <div style="background:var(--accent);color:white;border-radius:8px;padding:12px;font-size:13px">
+      💡 <strong>Rule of thumb:</strong> First check if TFSA room is available → dump refund there (tax-free forever). If TFSA is maxed → WS non-registered Invest account. Either way: don't spend it, invest it the day it lands.
+    </div>
+    <div style="background:#f0f9f0;border:1px solid #b5d9be;border-radius:8px;padding:10px;margin-top:10px;font-size:13px">
+      📈 Reinvesting all refunds for 17 years adds ~$600K to your 2043 portfolio vs spending them.
+    </div>
+  </div>
+
+  <!-- WHERE IN WEALTHSIMPLE -->
+  <div class="section-label">📱 Step-by-Step: Setting It Up in WealthSimple</div>
+  <div class="card">
+    <div class="action-item">
+      <div class="action-num">1</div>
+      <div>
+        <div class="action-title">Check your TFSA room on CRA first</div>
+        <div class="action-desc">Go to canada.ca → My CRA Account → TFSA → "Room Available." If you've never maxed TFSA before, you may have $40K+ in unused room — you can deposit a lump sum immediately.</div>
+      </div>
+    </div>
+    <div class="action-item">
+      <div class="action-num">2</div>
+      <div>
+        <div class="action-title">Open WealthSimple → RRSP → Auto-Deposit</div>
+        <div class="action-desc">Set up: Kseniya <strong>$6,221/mo</strong> (CRA confirmed $74,654 room) + Artemii $2,550/mo (est — confirm on CRA first). Both choose "WS Core Growth" (managed, 80% equities). This runs automatically — you don't touch it.</div>
+      </div>
+    </div>
+    <div class="action-item">
+      <div class="action-num">3</div>
+      <div>
+        <div class="action-title">Open WealthSimple → TFSA → Auto-Deposit</div>
+        <div class="action-desc">⚠️ <strong>First:</strong> log into CRA MyAccount → TFSA → Transaction Summary to check Kseniya's actual 2026 remaining room (CRA shows $13,687.56 but has a Warning flag — verify before depositing). Then set up: Kseniya $1,141/mo + Artemii $583/mo (confirm his room too). Same "WS Core Growth" portfolio.</div>
+      </div>
+    </div>
+    <div class="action-item">
+      <div class="action-num">4</div>
+      <div>
+        <div class="action-title">Set RESP for Margo: $208/mo = $2,500/yr</div>
+        <div class="action-desc">Government adds $500 free (20% CESG). Open at WealthSimple or existing bank. Provide account details here to update the snapshot.</div>
+      </div>
+    </div>
+    <div class="action-item">
+      <div class="action-num">5</div>
+      <div>
+        <div class="action-title">Keep ~$2,000/mo as chequing float</div>
+        <div class="action-desc">Leave it in RBC chequing to absorb variable months (travel, vet bills, Margo activities). This is not "wasted" — it's your insurance against touching investments.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+<!-- ===== END HOW TO INVEST TAB ===== -->
+
+<!-- ========== TAB: DEBT ATTACK ========== -->
+<div id="tab-debt" class="tab-content">
+<div class="main">
+
+  <div class="banner banner-warn">
+    🔥 <strong>Ramsey Mode:</strong> Every debt gone before retirement. Free yourself faster — then invest harder. Here's the full picture and the plan.
+  </div>
+
+  <!-- DEBT SNAPSHOT -->
+  <div class="card">
+    <div class="card-title">📋 Your Debts — Full Picture</div>
+    <table style="width:100%;border-collapse:collapse;font-size:14px">
+      <thead>
+        <tr style="border-bottom:2px solid var(--border);text-align:left">
+          <th style="padding:8px 4px;color:var(--muted);font-weight:500">Debt</th>
+          <th style="padding:8px 4px;color:var(--muted);font-weight:500;text-align:right">Balance</th>
+          <th style="padding:8px 4px;color:var(--muted);font-weight:500;text-align:right">Rate</th>
+          <th style="padding:8px 4px;color:var(--muted);font-weight:500;text-align:right">Monthly</th>
+          <th style="padding:8px 4px;color:var(--muted);font-weight:500;text-align:right">Payoff</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px 4px"><strong>Tesla Financing</strong><br><span style="font-size:11px;color:var(--muted)">WS financing, confirmed $409/mo</span></td>
+          <td style="padding:10px 4px;text-align:right;font-family:'DM Mono',monospace">~$18K</td>
+          <td style="padding:10px 4px;text-align:right;font-family:'DM Mono',monospace">4.5%</td>
+          <td style="padding:10px 4px;text-align:right;font-family:'DM Mono',monospace">$409</td>
+          <td style="padding:10px 4px;text-align:right"><span style="background:var(--warn-bg);color:var(--warn);padding:2px 8px;border-radius:20px;font-size:12px">~2029</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px 4px"><strong>Mortgage</strong><br><span style="font-size:11px;color:var(--muted)">152 Harmony Circle, CMLS, 5.56%</span></td>
+          <td style="padding:10px 4px;text-align:right;font-family:'DM Mono',monospace">~$553K</td>
+          <td style="padding:10px 4px;text-align:right;font-family:'DM Mono',monospace">5.56%</td>
+          <td style="padding:10px 4px;text-align:right;font-family:'DM Mono',monospace">$4,332</td>
+          <td style="padding:10px 4px;text-align:right"><span style="background:#fce8e8;color:#b23a48;padding:2px 8px;border-radius:20px;font-size:12px">Dec 2041</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px 4px"><strong>Mazda Lease</strong><br><span style="font-size:11px;color:var(--muted)">If you keep it — not debt but locked cash</span></td>
+          <td style="padding:10px 4px;text-align:right;font-family:'DM Mono',monospace">28 mo left</td>
+          <td style="padding:10px 4px;text-align:right;font-family:'DM Mono',monospace">—</td>
+          <td style="padding:10px 4px;text-align:right;font-family:'DM Mono',monospace">$959</td>
+          <td style="padding:10px 4px;text-align:right"><span style="background:var(--blue-bg);color:var(--blue);padding:2px 8px;border-radius:20px;font-size:12px">~2028</span></td>
+        </tr>
+        <tr>
+          <td style="padding:10px 4px"><strong>Life Insurance</strong><br><span style="font-size:11px;color:var(--muted)">Equitable + BMO + Foresters — worth reviewing</span></td>
+          <td style="padding:10px 4px;text-align:right;font-family:'DM Mono',monospace">ongoing</td>
+          <td style="padding:10px 4px;text-align:right;font-family:'DM Mono',monospace">—</td>
+          <td style="padding:10px 4px;text-align:right;font-family:'DM Mono',monospace">$595</td>
+          <td style="padding:10px 4px;text-align:right"><span style="background:#f3eefb;color:#6b3fa0;padding:2px 8px;border-radius:20px;font-size:12px">review</span></td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr style="border-top:2px solid var(--border)">
+          <td style="padding:10px 4px;font-weight:600">Total monthly debt load</td>
+          <td colspan="3"></td>
+          <td style="padding:10px 4px;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:var(--danger)">$6,295/mo</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- SNOWBALL PLAN -->
+  <div class="card">
+    <div class="card-title">❄️→🔥 The Snowball Plan</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Pay minimums on everything. Attack smallest debt first. When it's dead, roll that payment into the next. Here's your sequence:</p>
+
+    <div style="display:flex;flex-direction:column;gap:12px">
+
+      <!-- Step 1 -->
+      <div style="border-left:4px solid var(--warn);padding:12px 16px;background:var(--warn-bg);border-radius:0 8px 8px 0">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-weight:700;font-size:15px">① Tesla Loan — Kill it first</span>
+          <span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--warn)">~$18K</span>
+        </div>
+        <p style="font-size:13px;color:var(--text);margin-bottom:6px">Currently $409/mo. You have ~$10,835/mo surplus. Throw an extra <strong>$1,500/mo</strong> at it on top of $409 = ~$1,909/mo total. Paid off in <strong>~10 months (Aug 2027)</strong>.</p>
+        <p style="font-size:12px;color:var(--muted)">⚡ But wait — at 4.5% rate, your WS Summit earns 7%. Mathematically, investing wins. The Ramsey counterargument: the <em>psychological</em> win of eliminating a payment frees mental bandwidth. Your call — see the math below.</p>
+      </div>
+
+      <!-- Step 2 -->
+      <div style="border-left:4px solid #6b3fa0;padding:12px 16px;background:#f3eefb;border-radius:0 8px 8px 0">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-weight:700;font-size:15px">② Exit the Mazda Lease</span>
+          <span style="font-family:'DM Mono',monospace;font-weight:700;color:#6b3fa0">$959/mo freed</span>
+        </div>
+        <p style="font-size:13px;color:var(--text);margin-bottom:6px">List on LeaseBuster.ca — someone takes over, you walk away free. Replace with a used Bolt EV (~$350/mo finance) = <strong>$609/mo freed</strong>. After Tesla is done (Aug 2027), snowball that $409 into mortgage prepayments too.</p>
+        <p style="font-size:12px;color:var(--muted)">Combined: $959 lease freed + $409 Tesla freed = <strong>$1,368/mo available for mortgage attack</strong> from mid-2027.</p>
+      </div>
+
+      <!-- Step 3 -->
+      <div style="border-left:4px solid var(--danger);padding:12px 16px;background:var(--danger-bg);border-radius:0 8px 8px 0">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-weight:700;font-size:15px">③ Mortgage — Accelerate to 2037</span>
+          <span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--danger)">4 years early</span>
+        </div>
+        <p style="font-size:13px;color:var(--text);margin-bottom:6px">Renewal Dec 2028. At renewal, make a lump-sum prepayment (typically 15–20% of balance allowed per year = ~$83–110K). Then increase monthly payments to $6,000+/mo. Mortgage could be gone by <strong>2037</strong> — 4 years early, saving ~$80K in interest.</p>
+        <p style="font-size:12px;color:var(--muted)">🔑 Key move: set payments to accelerated bi-weekly at renewal. Each extra payment goes straight to principal.</p>
+      </div>
+
+      <!-- Step 4 -->
+      <div style="border-left:4px solid var(--accent);padding:12px 16px;background:#f0f7f2;border-radius:0 8px 8px 0">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-weight:700;font-size:15px">④ Debt-free 2037 → Invest everything</span>
+          <span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--accent)">6 yrs to retire</span>
+        </div>
+        <p style="font-size:13px;color:var(--text)">With zero debt from 2037, your full $22K/mo net income becomes investable. At 7%, 6 years of $10K+/mo investing adds <strong>~$900K</strong> to the portfolio. Retire 2043 with mortgage-free home + $5M+ portfolio.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MATH: RAMSEY VS INVEST -->
+  <div class="card">
+    <div class="card-title">🧮 Ramsey vs. Investor — The Honest Math</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:12px">On the Tesla loan specifically (4.5% rate):</p>
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead>
+        <tr style="border-bottom:2px solid var(--border)">
+          <th style="padding:8px 4px;text-align:left;color:var(--muted);font-weight:500"></th>
+          <th style="padding:8px 4px;text-align:right;color:var(--warn);font-weight:600">Ramsey: Pay it off</th>
+          <th style="padding:8px 4px;text-align:right;color:var(--accent);font-weight:600">Investor: Keep & invest</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:8px 4px">Extra $1,500/mo goes to…</td>
+          <td style="padding:8px 4px;text-align:right;font-family:'DM Mono',monospace">Tesla payoff</td>
+          <td style="padding:8px 4px;text-align:right;font-family:'DM Mono',monospace">RRSP (48% refund!)</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:8px 4px">Interest saved</td>
+          <td style="padding:8px 4px;text-align:right;font-family:'DM Mono',monospace">~$1,800</td>
+          <td style="padding:8px 4px;text-align:right;font-family:'DM Mono',monospace">—</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:8px 4px">Tax refund from RRSP</td>
+          <td style="padding:8px 4px;text-align:right;font-family:'DM Mono',monospace">—</td>
+          <td style="padding:8px 4px;text-align:right;font-family:'DM Mono',monospace">~$8,640/yr</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:8px 4px">Portfolio growth (10 mo @ 7%)</td>
+          <td style="padding:8px 4px;text-align:right;font-family:'DM Mono',monospace">—</td>
+          <td style="padding:8px 4px;text-align:right;font-family:'DM Mono',monospace">~$15,700</td>
+        </tr>
+        <tr style="background:#f0f7f2">
+          <td style="padding:8px 4px;font-weight:600">Verdict</td>
+          <td style="padding:8px 4px;text-align:right">Peace of mind ✅</td>
+          <td style="padding:8px 4px;text-align:right;font-weight:700;color:var(--accent)">+$22K richer ✅</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:12px;color:var(--muted);margin-top:12px">💡 <strong>Our take:</strong> Keep Tesla financing ($409/mo), invest the extra into RRSP. But if having the loan keeps you up at night — kill it. Behaviour beats math every time.</p>
+  </div>
+
+  <!-- INSURANCE REVIEW -->
+  <div class="card">
+    <div class="card-title">🛡️ Insurance Audit — $595/mo Worth Reviewing</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:12px">You're paying $595/mo in life/disability premiums. That's $7,140/yr. Worth a 1-hour review with an independent broker:</p>
+    <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;background:var(--bg);border-radius:8px">
+        <span>Equitable Life — $107/mo</span>
+        <span style="color:var(--muted)">Confirm coverage amount & beneficiary</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;background:var(--bg);border-radius:8px">
+        <span>BMO Insurance — $175/mo</span>
+        <span style="color:var(--muted)">Is this term or whole life?</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;background:var(--bg);border-radius:8px">
+        <span>Foresters (IOF) — $313/mo</span>
+        <span style="color:var(--muted)">Largest one — confirm if still needed</span>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-top:12px">⚠️ As your portfolio grows, your <em>need</em> for life insurance decreases. By the time you hit $2M invested, your portfolio itself is the safety net. Consider whether these policies can be reduced or cancelled — saving $200–400/mo that redirects straight to retirement.</p>
+  </div>
+
+  <!-- DEBT-FREE TIMELINE -->
+  <div class="card">
+    <div class="card-title">📅 Debt-Free Timeline — Aggressive Mode</div>
+    <div style="display:flex;flex-direction:column;gap:0">
+      <div style="display:flex;gap:16px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border)">
+        <div style="min-width:60px;font-family:'DM Mono',monospace;font-weight:700;color:var(--accent);font-size:15px">Now</div>
+        <div><strong>Exit Mazda via LeaseBuster</strong> — list today, free ~$959/mo within 60 days. Replace with Bolt EV at ~$350/mo.</div>
+      </div>
+      <div style="display:flex;gap:16px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border)">
+        <div style="min-width:60px;font-family:'DM Mono',monospace;font-weight:700;color:var(--accent);font-size:15px">2027</div>
+        <div><strong>Tesla paid off</strong> (if you choose Ramsey on this one). $409/mo freed → snowball into mortgage prepayment. Or keep and invest — both valid.</div>
+      </div>
+      <div style="display:flex;gap:16px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border)">
+        <div style="min-width:60px;font-family:'DM Mono',monospace;font-weight:700;color:var(--accent);font-size:15px">2028</div>
+        <div><strong>Mortgage renewal.</strong> Make maximum lump-sum prepayment (~$83–110K). Switch to accelerated bi-weekly + increase payments. Aim for $6,000/mo to principal.</div>
+      </div>
+      <div style="display:flex;gap:16px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border)">
+        <div style="min-width:60px;font-family:'DM Mono',monospace;font-weight:700;color:var(--accent);font-size:15px">2037</div>
+        <div><strong>🏠 Mortgage gone — 4 years early.</strong> Save ~$80K interest. Now your entire income is investable.</div>
+      </div>
+      <div style="display:flex;gap:16px;align-items:flex-start;padding:12px 0">
+        <div style="min-width:60px;font-family:'DM Mono',monospace;font-weight:700;color:var(--accent);font-size:15px">2043</div>
+        <div><strong>🎉 Retire debt-free with $5M+ portfolio.</strong> $14,500+/mo income. Mortgage-free home. CPP + OAS bonus at 65.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHAT TO DO THIS MONTH -->
+  <div class="card" style="border:2px solid var(--accent)">
+    <div class="card-title">✅ Do This Month — Debt Attack Edition</div>
+    <div style="display:flex;flex-direction:column;gap:10px;font-size:13px">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <span style="font-size:18px">1️⃣</span>
+        <div><strong>Book an insurance review</strong> with an independent broker. Bring all 3 policies. Ask: "What's the minimum coverage I need given our $562K portfolio?" Potential savings: $200–400/mo.</div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <span style="font-size:18px">2️⃣</span>
+        <div><strong>List the Mazda on LeaseBuster.ca</strong> (free, takes 10 min). This is the single biggest monthly cash unlock: $959 → freed. Replaces with Bolt EV at ~$350/mo.</div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <span style="font-size:18px">3️⃣</span>
+        <div><strong>Confirm home insurance.</strong> Call Allstate — is home coverage bundled in your existing policy? If not, add it (~$100–150/mo for a home in Harmony).</div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <span style="font-size:18px">4️⃣</span>
+        <div><strong>Decide: Tesla payoff or RRSP?</strong> If the loan bothers you, add $1,500/mo to kill it by Aug 2027. If not, put $1,500 into RRSP — you'll come out $22K ahead mathematically but it's your peace of mind.</div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <span style="font-size:18px">5️⃣</span>
+        <div><strong>Set a Dec 2028 mortgage calendar reminder</strong> to prepare lump-sum prepayment. Start building that cash now — it's 2 years away but early prep wins.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+<!-- ===== END DEBT ATTACK TAB ===== -->
+
+<script>
+// ============ DATA ============
+const PORTFOLIO = 562094;
+const INCOME_BOTH_NET = 22147;  // Kseniya $12,439 + Artemii $9,708 net (calc'd from $170K AB salary)
+const INCOME_K_NET = 12439;     // Kseniya actual net pay
+
+const fixedCats = [
+  { name:'Mortgage', sub:'152 Harmony Circle, 5.56%', budget:4332 },
+  { name:'Mazda Lease (×2/mo)', sub:'$479.25 × 2 — toggle above', budget:959, tag:'mazda' },
+  { name:'Tesla Financing', sub:'$409.10/mo confirmed', budget:409, tag:'tesla' },
+  { name:'ENMAX Electricity', sub:'avg Jun-Aug from statements', budget:334 },
+  { name:'Allstate Insurance (2 cars)', sub:'$291.91 + $204.53 — may also cover home, confirm', budget:496 },
+  { name:'Life Ins — Equitable Life', sub:'monthly pre-auth from RBC chequing', budget:107 },
+  { name:'Life Ins — BMO Insurance', sub:'monthly pre-auth from RBC chequing', budget:175 },
+  { name:'Life Ins — Foresters (IOF)', sub:'monthly pre-auth from RBC chequing', budget:313 },
+  { name:'Rogers (phone/TV/internet)', sub:'pre-auth monthly', budget:254 },
+  { name:'Telus (2nd line)', sub:'pre-auth', budget:77 },
+  { name:'HOA / EPCOR', sub:'Harmony community fees', budget:220 },
+  { name:'Waste Collection', sub:'Rocky View County, ~$39/mo', budget:39 },
+  { name:'Taekwondo — Margo', sub:'Master Rims, ~$175 × 2/mo', budget:350 },
+  { name:'Subscriptions', sub:'Apple One, DAZN, Samsung, Wikimedia, Anthropic', budget:153 },
+  { name:'Pest Control (Insight)', sub:'seasonal', budget:160 },
+];
+
+const varCats = [
+  { name:'Groceries', sub:'PC Express, Costco, FreshCo, T&T · avg from statements', budget:1000 },
+  { name:'Amazon / Online Shopping', sub:'target under $300/mo', budget:300 },
+  { name:'Dining Out & Coffee', sub:'restaurants, Starbucks, takeout', budget:280 },
+  { name:'Fashion & Beauty', sub:'clothing, Sephora, Pandora, Nike', budget:500 },
+  { name:'Health & Pharmacy', sub:'CURISRX, Shoppers, iHerb, supplements', budget:200 },
+  { name:'Nespresso', sub:'~1 in-store or online order/mo', budget:90 },
+  { name:'Cannabis', sub:'Value Buds, In N Out Cannabis · target <$50', budget:50 },
+  { name:'Pets (food + insurance)', sub:'dog + cat food, FETCH insurance, vet', budget:250 },
+  { name:'Ukraine (Portmone + Sternenko)', sub:'avg $130/mo from statements', budget:130 },
+  { name:'Alcohol', sub:'liquor stores avg', budget:30 },
+  { name:'Entertainment & Activities', sub:'Calaway, cinema, events', budget:150 },
+  { name:'Home & Kids (IKEA/HomeSense)', sub:'household goods, kids items', budget:97 },
+  { name:'Misc / Other', sub:'everything else', budget:200 },
+];
+
+const otherCats = [
+  { name:'Gas / Petro-Canada', sub:'~$120/mo avg', budget:120 },
+  { name:'School (RVS, supplies)', sub:'~$750/yr ÷ 12', budget:63 },
+  { name:'Margo Allowance', sub:'$200/mo', budget:200 },
+  { name:'Cleaners (Uliana)', sub:'Uliana Botiuk, monthly', budget:300 },
+  { name:'Gifts (family + personal)', sub:'$4,800/yr ÷ 12 (incl. big xmas/bday gifts)', budget:400 },
+];
+
+let carState = { mazda: true, tesla: true };
+let actuals = {};
+const LS_KEY = 'vartazarov_v4';
+
+function saveLS() { try { localStorage.setItem(LS_KEY, JSON.stringify(actuals)); } catch(e){} }
+function loadLS() { try { const d = localStorage.getItem(LS_KEY); if(d) actuals = JSON.parse(d); } catch(e){} }
+loadLS();
+
+// ============ TABS ============
+function showTab(id, el) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  el.classList.add('active');
+  if(id==='retirement') { updateRetirement(retYear, RET_SCENARIOS['2043']); buildMilestones(); }
+  if(id==='scenarios') { buildScenarioChart(); updateMazdaCalc(); }
+}
+
+// ============ CAR TOGGLES ============
+function toggleCar(key, btn) {
+  carState[key] = !carState[key];
+  btn.classList.toggle('active');
+  renderAll();
+}
+
+// ============ RENDER ROWS ============
+function renderAll() {
+  renderGroup('fixed-rows', fixedCats, true);
+  renderGroup('variable-rows', varCats, false);
+  renderGroup('other-rows', otherCats, true);
+  updateTotals();
+}
+
+function renderGroup(id, cats, isFixed) {
+  const el = document.getElementById(id);
+  el.innerHTML = '';
+  cats.forEach(cat => {
+    if(cat.tag==='mazda' && !carState.mazda) return;
+    if(cat.tag==='tesla' && !carState.tesla) return;
+    const key = cat.name;
+    const actual = actuals[key] || '';
+    const actualN = parseFloat(actual) || 0;
+    const pct = cat.budget > 0 ? Math.min(actualN/cat.budget*100,100) : 0;
+    const over = actualN > cat.budget && actualN > 0;
+    const delta = cat.budget - actualN;
+    const row = document.createElement('div');
+    row.className = 'budget-row';
+    row.innerHTML = `
+      <div class="budget-cat">
+        <div class="budget-cat-name">${cat.name}</div>
+        <div class="budget-cat-sub">${cat.sub}</div>
+      </div>
+      <div class="budget-budget">$${cat.budget.toLocaleString()}</div>
+      ${isFixed
+        ? `<div class="budget-budget" style="font-size:11px">fixed</div>`
+        : `<div class="budget-actual-wrap">
+            <input class="budget-actual" type="number" placeholder="actual" value="${actual}"
+              oninput="setActual('${key.replace(/'/g,"\\'")}',this.value)">
+           </div>
+           <div class="budget-bar-wrap">
+             <div class="budget-bar-bg">
+               <div class="budget-bar-fill${over?' over':''}" style="width:${pct}%"></div>
+             </div>
+           </div>
+           <div class="budget-delta ${delta>=0?'delta-pos':'delta-neg'}">
+             ${actualN>0?(delta>=0?'-$':'+$')+Math.abs(Math.round(delta)):''}
+           </div>`
+      }`;
+    el.appendChild(row);
+  });
+}
+
+function setActual(key, val) {
+  actuals[key] = val;
+  saveLS();
+  updateTotals();
+}
+
+function updateTotals() {
+  let fixedBudget=0, varBudget=0, otherBudget=0;
+  let varActual=0;
+  const allCats = [...fixedCats,...varCats,...otherCats];
+  allCats.forEach(cat => {
+    if(cat.tag==='mazda'&&!carState.mazda) return;
+    if(cat.tag==='tesla'&&!carState.tesla) return;
+    if(fixedCats.includes(cat)) fixedBudget += cat.budget;
+    else if(varCats.includes(cat)) {
+      varBudget += cat.budget;
+      varActual += parseFloat(actuals[cat.name])||0;
+    } else otherBudget += cat.budget;
+  });
+  const totalBudget = fixedBudget + varBudget + otherBudget;
+  const totalActual = varActual; // only variable has actuals for now
+  const rem = totalBudget - totalActual;
+  document.getElementById('fixed-total-display').textContent = '$'+fixedBudget.toLocaleString();
+  document.getElementById('total-budget').textContent = '$'+totalBudget.toLocaleString();
+  document.getElementById('total-actual').textContent = '$'+Math.round(totalActual).toLocaleString();
+  const remEl = document.getElementById('total-remaining');
+  remEl.textContent = (rem>=0?'$':'-$')+Math.abs(Math.round(rem)).toLocaleString();
+  remEl.style.color = rem>=0 ? 'var(--accent)' : 'var(--danger)';
+  document.getElementById('variable-total-display').textContent =
+    `$${varBudget.toLocaleString()} budget / $${Math.round(varActual).toLocaleString()} actual`;
+  document.getElementById('grand-total-display').textContent = '$'+totalBudget.toLocaleString();
+  const savings = INCOME_BOTH_NET - totalBudget;
+  document.getElementById('savings-val').textContent = '~$'+savings.toLocaleString();
+  document.getElementById('savings-total-display').textContent = '$'+savings.toLocaleString()+'/mo';
+}
+
+// ============ RETIREMENT ============
+let retTarget = 4350000;
+let retYear = 2043;
+let retChart = null;
+
+// Scenario definitions: year → {kAge, aAge, monthly, note}
+const RET_SCENARIOS = {
+  '2039': { kAge:52, aAge:56, monthly:6423, label:'Kseniya semi-retires',
+    note:'Portfolio ~$3M. Artemii may still work a few more years. Good escape hatch if you want out early — covers ~$8,750/mo. Mortgage has 2 years left.' },
+  '2042': { kAge:55, aAge:59, monthly:6423, label:'Both retire ~55',
+    note:'Portfolio ~$4M. Mortgage paid off 1 year earlier (2041). $11,600/mo income — comfortable and mortgage-free. CPP arrives 6 years later as a bonus.' },
+  '2043': { kAge:56, aAge:60, monthly:6423, label:'Artemii retires at 60 ✅',
+    note:'Portfolio ~$4.35M → $12,700/mo. Mortgage fully paid 2 years before retirement. You arrive debt-free with full income. Recommended — one extra year adds $367K.' },
+  'custom': { kAge:null, aAge:null, monthly:6423, label:'Custom year',
+    note:'Custom retirement projection. Adjust the year to see your portfolio and income at any target date.' }
+};
+
+function proj(base, monthly, years) {
+  const r = 0.07/12;
+  let v = base;
+  for(let m=0; m<years*12; m++) v = v*(1+r)+monthly;
+  return Math.round(v);
+}
+
+function monthsTo(base, monthly, target) {
+  const r = 0.07/12; let v=base,m=0;
+  while(v<target && m<600){v=v*(1+r)+monthly;m++;}
+  return m;
+}
+
+function setScenario(key, card) {
+  document.querySelectorAll('.ret-scenario-card').forEach(c=>c.classList.remove('active'));
+  card.classList.add('active');
+  const yr = key==='custom'
+    ? parseInt(document.getElementById('custom-year-input').value)||2045
+    : parseInt(key);
+  retYear = yr;
+  const sc = RET_SCENARIOS[key] || RET_SCENARIOS['custom'];
+  // Update custom card year display
+  if(key==='custom') document.getElementById('rs-custom-yr').textContent = yr;
+  updateRetirement(yr, sc); buildMilestones();
+}
+
+function updateRetirement(retYr, sc) {
+  retYr = retYr || retYear;
+  sc = sc || RET_SCENARIOS['2043'];
+  const base = parseFloat(document.getElementById('portfolioVal').value)||PORTFOLIO;
+  const YRS = retYr - 2026;
+  const OPT = 10000, CURR = sc.monthly;
+  const pOpt = proj(base,OPT,YRS);
+  const pCurr = proj(base,CURR,YRS);
+  const pCoast = proj(base,0,YRS);
+  const T = pCurr; // target = what current pace achieves
+  retTarget = T;
+
+  const incomeOpt = Math.round(pOpt*0.035/12/50)*50;
+  const incomeCurr = Math.round(pCurr*0.035/12/50)*50;
+
+  // Big summary panel
+  const kAge = sc.kAge || (39 + YRS);
+  const aAge = sc.aAge || (43 + YRS);
+  document.getElementById('rsp-year').textContent = retYr;
+  document.getElementById('rsp-ages').textContent = `Kseniya ${kAge} · Artemii ${aAge}`;
+  document.getElementById('rsp-portfolio').textContent = `$${(pCurr/1e6).toFixed(2)}M`;
+  document.getElementById('rsp-years-away').textContent = `${YRS} years away`;
+  document.getElementById('rsp-income').textContent = `$${incomeCurr.toLocaleString()}/mo`;
+  document.getElementById('rsp-income-note').textContent = 'tax-free from invested portfolio (3.5% SWR)';
+  document.getElementById('rsp-note').textContent = sc.note;
+
+  // Mortgage banner
+  const mortgageNote = retYr <= 2041
+    ? `🏠 <strong>Mortgage still running at retirement:</strong> Payoff Dec 2041. Budget $4,332/mo until then (${2041-retYr} years), then expenses drop by that amount. Factor this into your monthly income needs.`
+    : `✅ <strong>Mortgage-free at retirement:</strong> Mortgage pays off Dec 2041 — ${retYr-2041} year(s) before you retire. You arrive debt-free. Full income goes to lifestyle.`;
+  document.getElementById('ret-mortgage-banner').innerHTML = mortgageNote;
+  document.getElementById('ret-mortgage-banner').className = retYr <= 2041 ? 'banner banner-warn' : 'banner banner-ok';
+
+  // Stat cards
+  const COAST = pCurr / Math.pow(1.07, YRS);
+  document.getElementById('ret-metrics').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-label">Optimised ($10K/mo)</div>
+      <div class="stat-value stat-green">$${(pOpt/1e6).toFixed(2)}M</div>
+      <div class="stat-sub">${retYr} · $${incomeOpt.toLocaleString()}/mo income @ 3.5%</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Your pace ($${(CURR/1000).toFixed(1)}K/mo)</div>
+      <div class="stat-value stat-blue">$${(pCurr/1e6).toFixed(2)}M</div>
+      <div class="stat-sub">${retYr} · $${incomeCurr.toLocaleString()}/mo income @ 3.5%</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">CoastFIRE Number</div>
+      <div class="stat-value" style="color:var(--purple)">$${Math.round(COAST/1000)}K</div>
+      <div class="stat-sub">Needed today — then zero contributions reach $${(pCurr/1e6).toFixed(1)}M by ${retYr}</div>
+    </div>`;
+
+  const coastGap = Math.max(0, COAST-base);
+  const moOpt = monthsTo(base,OPT,COAST);
+  const moCurr = monthsTo(base,CURR,COAST);
+  const yrOpt = 2026+Math.ceil(moOpt/12);
+  const yrCurr = 2026+Math.ceil(moCurr/12);
+  const pctNow = Math.min(base/COAST*100,100);
+
+  document.getElementById('coast-card').innerHTML = `
+    <div class="coast-title">⛵ CoastFIRE Status — retire ${retYr} target</div>
+    <div class="grid-3" style="margin-bottom:14px">
+      <div>
+        <div style="font-size:11px;color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Portfolio Now</div>
+        <div style="font-size:22px;font-weight:700">$${(base/1000).toFixed(0)}K</div>
+        <div style="font-size:12px;color:var(--muted)">${Math.round(pctNow)}% of CoastFIRE number</div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Gap to Coast</div>
+        <div style="font-size:22px;font-weight:700">$${Math.round(coastGap/1000)}K</div>
+        <div style="font-size:12px;color:var(--muted)">then compounding does the rest</div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Coast Year</div>
+        <div style="font-size:22px;font-weight:700">${yrOpt} / ${yrCurr}</div>
+        <div style="font-size:12px;color:var(--muted)">optimised / your pace</div>
+      </div>
+    </div>
+    <div style="background:rgba(37,99,168,0.1);border-radius:6px;height:10px;margin-bottom:8px;overflow:hidden">
+      <div style="background:var(--blue);height:10px;width:${pctNow}%;transition:width .4s;border-radius:6px"></div>
+    </div>
+    <div style="font-size:12px;color:var(--muted)">At $${Math.round(COAST/1000)}K you can stop contributing — 7%/yr compounding reaches $${(pCurr/1e6).toFixed(1)}M by ${retYr} on its own.</div>`;
+
+  // Chart — show vertical line at retirement year
+  const labels=[], dOpt=[], dCurr=[], dCoast=[], dTgt=[];
+  for(let y=0;y<=28;y++){
+    labels.push(2026+y);
+    dOpt.push(Math.round(proj(base,OPT,y)/1000));
+    dCurr.push(Math.round(proj(base,CURR,y)/1000));
+    dCoast.push(Math.round(proj(base,0,y)/1000));
+    dTgt.push(null);
+  }
+  // Mark retirement year value
+  const retIdx = retYr - 2026;
+  const retVal = dCurr[Math.min(retIdx, dCurr.length-1)];
+  const dRetMark = dCurr.map((_,i)=>i===retIdx?retVal:null);
+
+  if(retChart) retChart.destroy();
+  const ctx=document.getElementById('retChart').getContext('2d');
+  retChart=new Chart(ctx,{
+    type:'line',data:{labels,datasets:[
+      {label:'Optimised ($10K/mo)',data:dOpt,borderColor:'#2d5a3d',backgroundColor:'rgba(45,90,61,.08)',borderWidth:2.5,fill:true,tension:.3,pointRadius:0},
+      {label:`Your pace ($${(CURR/1000).toFixed(1)}K/mo)`,data:dCurr,borderColor:'#2563a8',backgroundColor:'transparent',borderWidth:2.5,tension:.3,pointRadius:0},
+      {label:'CoastFIRE (zero contribs)',data:dCoast,borderColor:'#94a3b8',backgroundColor:'transparent',borderWidth:1.5,borderDash:[5,4],tension:.3,pointRadius:0},
+      {label:`Retirement ${retYr}`,data:dRetMark,borderColor:'#c17f2a',backgroundColor:'#c17f2a',borderWidth:0,pointRadius:dRetMark.map(v=>v!==null?8:0),pointStyle:'circle'},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,callbacks:{label:c=>c.parsed.y!==null?` ${c.dataset.label}: $${c.parsed.y.toLocaleString()}K`:null}}},
+      scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{callback:v=>'$'+v+'K'}}}}
+  });
+}
+
+// ============ MILESTONES ============
+function buildMilestones() {
+  const base = PORTFOLIO;
+  const YRS = retYear - 2026;
+  const pRetire = proj(base, 6423, YRS);
+  const incomeRetire = Math.round(pRetire*0.035/12/100)*100;
+  const ms = [
+    {year:2026,text:`<strong>Today:</strong> Portfolio $562K. October on Kseniya's income only. RRSP auto-invest starts November. Both incomes = $22,147/mo net.`},
+    {year:2027,text:`Both fully contributing. Portfolio ~$900K on optimised path. Mazda lease exit decision — LeaseBuster.ca.`},
+    {year:2028,text:`<strong>Dec 2028 — Mortgage renewal.</strong> Balance ~$414K. Engage mortgage broker June 2028. New rate may change invest-vs-prepay math.`},
+    {year:2029,text:`Mazda lease ends Feb 2029 (if kept). Transportation cost drops $958/mo — redirect to RRSP.`},
+    {year:2041,text:`<strong>🏠 Mortgage fully paid off!</strong> $4,332/mo freed. Expenses drop ~$52K/yr. Strong runway to retirement.`},
+    {year:retYear,text:`<strong>🎉 RETIREMENT — ${retYear}.</strong> Kseniya ${39+(retYear-2026)}, Artemii ${43+(retYear-2026)}. Portfolio ~$${(pRetire/1e6).toFixed(2)}M. <strong>$${incomeRetire.toLocaleString()}/mo income</strong> at 3.5% SWR — forever.`},
+    {year:Math.max(retYear+5,2048),text:`<strong>CPP + OAS at 65.</strong> ~$2,981/mo government income on top of portfolio withdrawals. Portfolio keeps compounding.`},
+  ].filter(m=>m.year<=2060);
+  document.getElementById('milestones-list').innerHTML = ms.map(m=>`
+    <div class="milestone">
+      <div class="milestone-dot"></div>
+      <div class="milestone-year">${m.year}</div>
+      <div class="milestone-text">${m.text}</div>
+    </div>`).join('');
+}
+
+// ============ SCENARIOS CHART ============
+let scenChart = null;
+
+function updateMazdaCalc() {
+  const base = PORTFOLIO;
+  const yrs = 12;
+  const keep = proj(base,5000,yrs);
+  const exit = proj(base,5958,yrs); // 5000+958
+  document.getElementById('mazda-keep').textContent = '$'+(keep/1e6).toFixed(2)+'M';
+  document.getElementById('mazda-exit').textContent = '$'+(exit/1e6).toFixed(2)+'M';
+  document.getElementById('mazda-gain').textContent = '+$'+Math.round((exit-keep)/1000)+'K by 2038';
+}
+
+function buildScenarioChart() {
+  updateMazdaCalc();
+  const base = PORTFOLIO;
+  const yrs = [0,2,4,6,8,10,12];
+  const labels = yrs.map(y=>2026+y);
+  const s1 = yrs.map(y=>Math.round(proj(base,10000,y)/1000));
+  const s2 = yrs.map(y=>Math.round(proj(base,7500,y)/1000));
+  const s3 = yrs.map(y=>Math.round(proj(base,5000,y)/1000));
+  const s4 = yrs.map(y=>Math.round(proj(base,3000,y)/1000));
+  if(scenChart) scenChart.destroy();
+  const ctx = document.getElementById('scenarioChart').getContext('2d');
+  scenChart = new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'Best: Exit Mazda + Optimise (~$10K/mo)',data:s1,backgroundColor:'#2d5a3d'},
+      {label:'Good: No Mazda, Tesla kept (~$7.5K/mo)',data:s2,backgroundColor:'#4a7c59'},
+      {label:'Current: Both cars, $5K/mo',data:s3,backgroundColor:'#94a3b8'},
+      {label:'Conservative: $3K/mo',data:s4,backgroundColor:'#d4d0c8'},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:12},padding:14}}},
+      scales:{x:{grid:{display:false}},y:{ticks:{callback:v=>'$'+v+'K'}}}}
+  });
+}
+
+// ============ INIT ============
+renderAll();
+const now = new Date();
+document.getElementById('monthLabel').textContent =
+  now.toLocaleString('en-CA',{month:'long',year:'numeric'});
+</script>
+</body>
+</html>
