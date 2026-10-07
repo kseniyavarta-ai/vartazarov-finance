@@ -150,6 +150,7 @@
 
 <div class="tabs">
   <div class="tab active" onclick="showTab('spending',this)">📊 This Month</div>
+  <div class="tab" onclick="showTab('logger',this)">📝 Log Expense</div>
   <div class="tab" onclick="showTab('retirement',this)">🎯 Retirement</div>
   <div class="tab" onclick="showTab('scenarios',this)">⚖️ Scenarios</div>
   <div class="tab" onclick="showTab('actions',this)">✅ Action List</div>
@@ -240,6 +241,70 @@
 
 </div>
 </div>
+
+<!-- ========== TAB: LOGGER ========== -->
+<div id="tab-logger" class="tab-content">
+<div class="main">
+
+  <div class="banner banner-info">
+    📱 <strong>Quick add at checkout.</strong> Tap a category, enter amount, hit Save. Both you and Artemii can log from any device — everything goes to your shared Google Sheet.
+  </div>
+
+  <!-- WHO IS LOGGING -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-title">👤 Who's paying?</div>
+    <div style="display:flex;gap:10px">
+      <div id="who-K" class="scenario-btn active" onclick="setWho('Kseniya',this)" style="flex:1;text-align:center;padding:12px">🙋‍♀️ Kseniya</div>
+      <div id="who-A" class="scenario-btn" onclick="setWho('Artemii',this)" style="flex:1;text-align:center;padding:12px">🙋‍♂️ Artemii</div>
+    </div>
+  </div>
+
+  <!-- CATEGORY PICKER -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-title">🏷️ Category</div>
+    <div id="cat-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px"></div>
+  </div>
+
+  <!-- AMOUNT + NOTE -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-title">💵 Amount & Note</div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <div style="position:relative;flex:1;min-width:120px">
+        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-weight:600;color:var(--muted)">$</span>
+        <input id="log-amount" type="number" step="0.01" min="0" placeholder="0.00"
+          style="width:100%;padding:12px 12px 12px 28px;font-size:20px;font-weight:700;border:2px solid var(--border);border-radius:10px;outline:none;background:var(--bg)"
+          onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+      </div>
+      <input id="log-note" type="text" placeholder="Note (optional — e.g. Costco run)"
+        style="flex:2;min-width:160px;padding:12px;font-size:14px;border:2px solid var(--border);border-radius:10px;outline:none;background:var(--bg)"
+        onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+    </div>
+  </div>
+
+  <!-- DATE -->
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title">📅 Date</div>
+    <input id="log-date" type="date"
+      style="padding:10px;font-size:14px;border:2px solid var(--border);border-radius:10px;outline:none;background:var(--bg);font-family:'DM Sans',sans-serif"
+      onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+  </div>
+
+  <!-- SAVE BUTTON -->
+  <button id="log-save-btn" onclick="logExpense()"
+    style="width:100%;padding:16px;background:var(--accent);color:white;border:none;border-radius:12px;font-size:17px;font-weight:700;cursor:pointer;letter-spacing:-0.3px;margin-bottom:12px">
+    ✅ Save Expense
+  </button>
+  <div id="log-status" style="text-align:center;font-size:14px;min-height:22px;margin-bottom:16px"></div>
+
+  <!-- RECENT LOG (local cache) -->
+  <div class="card">
+    <div class="card-title">🕐 Recent (this session)</div>
+    <div id="recent-log" style="font-size:13px;color:var(--muted)">Nothing logged yet this session.</div>
+  </div>
+
+</div>
+</div>
+<!-- ========== END LOGGER TAB ========== -->
 
 <!-- ========== TAB: RETIREMENT ========== -->
 <div id="tab-retirement" class="tab-content">
@@ -1053,6 +1118,7 @@ function showTab(id, el) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById('tab-'+id).classList.add('active');
   el.classList.add('active');
+  if(id==='logger') { buildCatGrid(); initLoggerDate(); }
   if(id==='retirement') { updateRetirement(retYear, RET_SCENARIOS['2043']); buildMilestones(); }
   if(id==='scenarios') { buildScenarioChart(); updateMazdaCalc(); }
 }
@@ -1361,6 +1427,128 @@ function buildScenarioChart() {
       plugins:{legend:{position:'bottom',labels:{font:{size:12},padding:14}}},
       scales:{x:{grid:{display:false}},y:{ticks:{callback:v=>'$'+v+'K'}}}}
   });
+}
+
+// ============ EXPENSE LOGGER ============
+const SHEET_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwa_vt7NvKsV7ZJUuoGZpOwGR8HLnzr18_6RPaU8BZVh07TVUs9jYPhDQlZ5tXX5BGU/exec';
+
+const LOG_CATS = [
+  {name:'Groceries',icon:'🛒'},
+  {name:'Dining Out',icon:'🍽️'},
+  {name:'Coffee',icon:'☕'},
+  {name:'Amazon',icon:'📦'},
+  {name:'Fashion',icon:'👗'},
+  {name:'Health',icon:'💊'},
+  {name:'Gas',icon:'⛽'},
+  {name:'Pets',icon:'🐾'},
+  {name:'Kids',icon:'🧒'},
+  {name:'Entertainment',icon:'🎬'},
+  {name:'Home',icon:'🏠'},
+  {name:'Nespresso',icon:'☕'},
+  {name:'Cannabis',icon:'🌿'},
+  {name:'Alcohol',icon:'🍷'},
+  {name:'Ukraine',icon:'🇺🇦'},
+  {name:'Transport',icon:'🚗'},
+  {name:'Subscriptions',icon:'📱'},
+  {name:'Gifts',icon:'🎁'},
+  {name:'Other',icon:'💳'},
+];
+
+let logWho = 'Kseniya';
+let logCat = '';
+let sessionLog = [];
+
+function setWho(who, btn) {
+  logWho = who;
+  document.getElementById('who-K').classList.toggle('active', who==='Kseniya');
+  document.getElementById('who-A').classList.toggle('active', who==='Artemii');
+}
+
+function buildCatGrid() {
+  const grid = document.getElementById('cat-grid');
+  grid.innerHTML = '';
+  LOG_CATS.forEach(c => {
+    const btn = document.createElement('div');
+    btn.className = 'scenario-btn';
+    btn.id = 'cat-' + c.name;
+    btn.style.cssText = 'text-align:center;padding:10px 6px;font-size:13px';
+    btn.innerHTML = `<div style="font-size:20px;margin-bottom:3px">${c.icon}</div>${c.name}`;
+    btn.onclick = () => {
+      document.querySelectorAll('#cat-grid .scenario-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      logCat = c.name;
+    };
+    grid.appendChild(btn);
+  });
+}
+
+function initLoggerDate() {
+  const d = new Date();
+  const iso = d.toISOString().split('T')[0];
+  document.getElementById('log-date').value = iso;
+}
+
+async function logExpense() {
+  const amount = parseFloat(document.getElementById('log-amount').value);
+  const note = document.getElementById('log-note').value.trim();
+  const date = document.getElementById('log-date').value;
+  const status = document.getElementById('log-status');
+
+  if(!logCat) { status.textContent = '⚠️ Please select a category'; status.style.color='var(--danger)'; return; }
+  if(!amount || amount <= 0) { status.textContent = '⚠️ Please enter an amount'; status.style.color='var(--danger)'; return; }
+
+  const btn = document.getElementById('log-save-btn');
+  btn.textContent = '⏳ Saving...';
+  btn.disabled = true;
+  status.textContent = '';
+
+  const payload = { date, category: logCat, amount, note, who: logWho };
+
+  try {
+    await fetch(SHEET_ENDPOINT, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    // no-cors means we can't read response — assume success
+    status.textContent = `✅ Saved! $${amount.toFixed(2)} · ${logCat} · ${logWho}`;
+    status.style.color = 'var(--accent)';
+
+    // add to session log
+    sessionLog.unshift({ date, category: logCat, amount, note, who: logWho });
+    renderRecentLog();
+
+    // reset form
+    document.getElementById('log-amount').value = '';
+    document.getElementById('log-note').value = '';
+    document.querySelectorAll('#cat-grid .scenario-btn').forEach(b=>b.classList.remove('active'));
+    logCat = '';
+
+    setTimeout(()=>{ status.textContent=''; }, 3000);
+  } catch(e) {
+    status.textContent = '❌ Error — check your connection and try again';
+    status.style.color = 'var(--danger)';
+  }
+
+  btn.textContent = '✅ Save Expense';
+  btn.disabled = false;
+}
+
+function renderRecentLog() {
+  const el = document.getElementById('recent-log');
+  if(!sessionLog.length) { el.textContent = 'Nothing logged yet this session.'; return; }
+  el.innerHTML = sessionLog.slice(0,10).map(e=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div>
+        <span style="font-weight:600">${e.category}</span>
+        <span style="color:var(--muted);margin-left:6px;font-size:12px">${e.note||''}</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <span style="font-size:12px;color:var(--muted)">${e.who} · ${e.date}</span>
+        <span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--accent)">$${parseFloat(e.amount).toFixed(2)}</span>
+      </div>
+    </div>`).join('');
 }
 
 // ============ INIT ============
