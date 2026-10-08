@@ -939,13 +939,14 @@ const varCats = [
   { name:'Alcohol', sub:'liquor stores avg', budget:30 },
   { name:'Entertainment & Activities', sub:'Calaway, cinema, events · trimmed from $150', budget:100 },
   { name:'Home & Kids (IKEA/HomeSense)', sub:'household goods, kids items', budget:97 },
-  { name:"Artemii's WS card", sub:'NEW · his groceries + personal spending · est. until statements arrive', budget:1000 },
+  { name:"Artemii's WS card", sub:'dining, groceries, shopping · Jun–Sep avg ~$1,770 (excl. gas & one-offs) · target $1,200', budget:1200 },
   { name:'Kids clothing & activities', sub:'NEW · clothes, school trips, camps, extras', budget:150 },
   { name:'Misc / Other', sub:'everything else · trimmed from $200', budget:150 },
 ];
 
 const otherCats = [
   { name:'Gas / Petro-Canada', sub:'~$120/mo avg', budget:120 },
+  { name:"Gas — Artemii's car", sub:'from his WS card · ~$500/mo Jun–Sep', budget:450 },
   { name:'School (RVS, supplies)', sub:'~$750/yr ÷ 12', budget:63 },
   { name:'Margo Allowance', sub:'$200/mo', budget:200 },
   { name:'Cleaners (Uliana)', sub:'Uliana Botiuk, monthly', budget:300 },
@@ -1128,7 +1129,7 @@ function runPlan(S, actuals, opt) {
 function todaysMoney(v,yr){ return v/Math.pow(1+ENG.infl, yr+1-2026.83); }
 
 // ============ PLAN STATE (shared via Google Sheet, cached locally) ============
-const PLAN_DEFAULTS = { k_rrsp:3000, a_rrsp:2500, k_tfsa:0, a_tfsa:0, k_room:74654, a_room:52000 };
+const PLAN_DEFAULTS = { k_rrsp:3000, a_rrsp:2000, k_tfsa:0, a_tfsa:0, k_room:74654, a_room:121428 };  // Artemii: CRA 2026 deduction limit
 let planS = Object.assign({}, PLAN_DEFAULTS), planTs = 0;
 let invActuals = {};          // { 'YYYY-MM': {k_rrsp,a_rrsp,k_tfsa,a_tfsa} }
 let lastRun = null, lastSpend = null, retChart = null, saveTimer = null;
@@ -1228,7 +1229,7 @@ function renderPlan() {
   document.getElementById('pl-years').innerHTML = `<tr><th>Retire</th><th>Pot</th><th>Today's $</th><th>Per mo</th></tr>` + yr(2043,'Both stop at 56 / 60') + (goalYear&&goalYear!==2043&&goalYear!==2048&&goalYear!==2052?yr(goalYear,'Goal first covered'):'') + yr(2048,'Artemii turns 65') + yr(2052,'Kseniya turns 65',true);
   const ac=(l,k)=>`<tr><td>${l}</td><td class="mono">${$m(Y[2048][k])}</td><td class="mono">${$m(Y[2052][k])}</td></tr>`;
   document.getElementById('pl-acc').innerHTML = `<tr><th>Account</th><th>2048</th><th>2052</th></tr>`+ac('Kseniya RRSP','K_RRSP')+ac('Kseniya TFSA','K_TFSA')+ac('Artemii RRSP','A_RRSP')+ac('Artemii TFSA','A_TFSA')+ac('Non-registered','NonReg');
-  document.getElementById('pl-assump').innerHTML = `<strong>Assumptions:</strong> 7%/yr return (before Wealthsimple fees, ~0.5%), 2.5% inflation, salaries stay flat (Kseniya $233K, Artemii $165K), mortgage stays at 5.56%, $45K emergency fund in 3% savings. Contributions run until each turns 65. Refunds use 2026 Alberta + federal tax brackets, salary only, no bonus. About two-thirds of the pot is RRSP, which is taxed when withdrawn; TFSA is tax-free. Spending the refunds instead would leave ~${$m(lastSpend.years[2052].total)} in 2052 instead of ${$m(Y[2052].total)}.`;
+  document.getElementById('pl-assump').innerHTML = `<strong>Assumptions:</strong> 7%/yr return (before Wealthsimple fees, ~0.5%), 2.5% inflation, salaries stay flat (Kseniya $233K, Artemii $165K), mortgage stays at 5.56%, $45K emergency fund in 3% savings. Contributions run until each turns 65. Artemii repays $341/yr of his Home Buyers' Plan from 2027 out of his RRSP contributions (designate it on his tax return). Refunds use 2026 Alberta + federal tax brackets, salary only, no bonus. About two-thirds of the pot is RRSP, which is taxed when withdrawn; TFSA is tax-free. Spending the refunds instead would leave ~${$m(lastSpend.years[2052].total)} in 2052 instead of ${$m(Y[2052].total)}.`;
   if (retChart) drawRetChart();
 }
 
