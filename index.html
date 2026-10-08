@@ -219,7 +219,7 @@
   </div>
 
   <div class="card">
-    <div class="card-title">📋 Other Regular</div>
+    <div class="card-title">📋 Other Regular &amp; Sinking Funds <span style="font-size:12px;color:var(--muted);font-weight:400;margin-left:6px">← set aside monthly, spend when needed</span></div>
     <div id="other-rows"></div>
   </div>
 
@@ -395,7 +395,7 @@
     <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:6px"><div style="width:30px;height:30px;border-radius:50%;background:var(--purple);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">4</div><div><div class="card-title" style="margin-bottom:2px">When money frees up — do more</div></div></div>
     <div style="font-size:14px;line-height:1.8;margin-top:6px">
       📈 <strong>Every raise:</strong> half of the extra take-home → Artemii's RRSP (while he has room), then TFSAs. Update step 1 above.<br>
-      🚗 <strong>Feb 2029 — Mazda lease ends:</strong> $959/mo freed → RRSP catch-up / TFSA.<br>
+      🚗 <strong>Feb 2029 — Mazda lease ends:</strong> $959/mo freed → restart the TFSAs (paused for now).<br>
       🎁 <strong>Kseniya's bonus:</strong> straight into her RRSP catch-up room.
     </div>
   </div>
@@ -910,8 +910,10 @@ const fixedCats = [
   { name:'Mortgage', sub:'152 Harmony Circle, 5.56%', budget:4332 },
   { name:'Mazda Lease (×2/mo)', sub:'$479.25 × 2 — toggle above', budget:959, tag:'mazda' },
   { name:'Tesla Financing', sub:'$409.10/mo confirmed', budget:409, tag:'tesla' },
-  { name:'ENMAX Electricity', sub:'avg Jun-Aug from statements', budget:334 },
-  { name:'Allstate Insurance (2 cars)', sub:'$291.91 + $204.53 — may also cover home, confirm', budget:496 },
+  { name:'ENMAX Electricity', sub:'yearly avg incl. winter · summer avg was $334', budget:420 },
+  { name:'Water (EPCOR) — rate increase', sub:'NEW · bill ~2× from Oct 2026 · est., update after first bill', budget:120 },
+  { name:'Property tax (Rocky View County)', sub:'~$4,500/yr · not in mortgage payment', budget:375 },
+    { name:'Allstate Insurance (cars + home)', sub:'$291.91 + $204.53 · home insurance bundled', budget:496 },
   { name:'Life Ins — Equitable Life', sub:'monthly pre-auth from RBC chequing', budget:107 },
   { name:'Life Ins — BMO Insurance', sub:'monthly pre-auth from RBC chequing', budget:175 },
   { name:'Life Ins — Foresters (IOF)', sub:'monthly pre-auth from RBC chequing', budget:313 },
@@ -937,6 +939,8 @@ const varCats = [
   { name:'Alcohol', sub:'liquor stores avg', budget:30 },
   { name:'Entertainment & Activities', sub:'Calaway, cinema, events · trimmed from $150', budget:100 },
   { name:'Home & Kids (IKEA/HomeSense)', sub:'household goods, kids items', budget:97 },
+  { name:"Artemii's WS card", sub:'NEW · his groceries + personal spending · est. until statements arrive', budget:1000 },
+  { name:'Kids clothing & activities', sub:'NEW · clothes, school trips, camps, extras', budget:150 },
   { name:'Misc / Other', sub:'everything else · trimmed from $200', budget:150 },
 ];
 
@@ -946,6 +950,13 @@ const otherCats = [
   { name:'Margo Allowance', sub:'$200/mo', budget:200 },
   { name:'Cleaners (Uliana)', sub:'Uliana Botiuk, monthly', budget:300 },
   { name:'Gifts (family + personal)', sub:'$3,600/yr ÷ 12 · trimmed from $400', budget:300 },
+  { name:'Car maintenance & tires', sub:'NEW sinking fund · service, tires (~$1,500/set), wipers', budget:150 },
+  { name:'Vehicle registration', sub:'2 cars × $100/yr', budget:17 },
+  { name:'Home repairs & improvements', sub:'NEW sinking fund · appliances, fixes, projects', budget:400 },
+  { name:'Travel fund', sub:'NEW sinking fund · trips, flights, hotels', budget:300 },
+  { name:'Tech & household replacement', sub:'NEW · phones, laptops, small appliances', budget:50 },
+  { name:'Yard & snow', sub:'NEW · lawn, garden, snow removal', budget:40 },
+  { name:'Memberships & admin', sub:'NEW · Costco, tax prep, passports, renewals', budget:40 },
 ];
 
 let carState = { mazda: true, tesla: true };
@@ -1117,7 +1128,7 @@ function runPlan(S, actuals, opt) {
 function todaysMoney(v,yr){ return v/Math.pow(1+ENG.infl, yr+1-2026.83); }
 
 // ============ PLAN STATE (shared via Google Sheet, cached locally) ============
-const PLAN_DEFAULTS = { k_rrsp:3000, a_rrsp:3000, k_tfsa:693, a_tfsa:583, k_room:74654, a_room:52000 };
+const PLAN_DEFAULTS = { k_rrsp:3000, a_rrsp:2500, k_tfsa:0, a_tfsa:0, k_room:74654, a_room:52000 };
 let planS = Object.assign({}, PLAN_DEFAULTS), planTs = 0;
 let invActuals = {};          // { 'YYYY-MM': {k_rrsp,a_rrsp,k_tfsa,a_tfsa} }
 let lastRun = null, lastSpend = null, retChart = null, saveTimer = null;
@@ -1329,6 +1340,10 @@ const LOG_CATS = [
   {name:'Transport',icon:'🚗'},
   {name:'Subscriptions',icon:'📱'},
   {name:'Gifts',icon:'🎁'},
+  {name:'Car care',icon:'🔧'},
+  {name:'Home repairs',icon:'🛠️'},
+  {name:'Travel',icon:'✈️'},
+  {name:'Utilities',icon:'💡'},
   {name:'Other',icon:'💳'},
 ];
 
