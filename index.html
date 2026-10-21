@@ -160,6 +160,7 @@
   <div class="tab active" onclick="showTab('spending',this)">📊 This Month</div>
   <div class="tab" onclick="showTab('logger',this)">📝 Log Expense</div>
   <div class="tab" onclick="showTab('retirement',this)">🎯 The Plan</div>
+  <div class="tab" onclick="showTab('mortgage',this)">🏠 Mortgage</div>
   <div class="tab" onclick="showTab('scenarios',this)">⚖️ Scenarios</div>
   <div class="tab" onclick="showTab('actions',this)">✅ Action List</div>
   <div class="tab" onclick="showTab('debt',this)">🔥 Debt Attack</div>
@@ -429,6 +430,172 @@
 
 </div>
 </div>
+
+<!-- ========== TAB: MORTGAGE ========== -->
+<style>
+  .mg-house-wrap { display:grid; grid-template-columns: minmax(0,1fr); gap:12px; }
+  .mg-svg { width:100%; height:auto; display:block; }
+  .mg-ghost { --h-shake:#e7eae7; --h-trim:#cfd5d0; --h-siding:#f1f3f1; --h-stone:#e2e5e2; --h-bracket:#eceeec; --h-door:#dde1de; --h-glass:#eef1ef; --h-steps:#e9ebe9; --h-roof:#d3d8d4; --h-col:#f1f3f1; --h-line:#d9ddda; --h-light:transparent; }
+  .mg-color { --h-shake:#3a3d42; --h-trim:#1d1f22; --h-siding:#f3f1ea; --h-stone:#4b4b4e; --h-bracket:#e7e0d1; --h-door:#3d434a; --h-glass:#a9bcc6; --h-steps:#bdbab3; --h-roof:#2a2c2f; --h-col:#f6f4ee; --h-line:#d8d4ca; --h-light:#ffd36b; }
+  .mg-seg { display:inline-flex; background:var(--bg); border:1px solid var(--border); border-radius:20px; padding:3px; gap:3px; flex-wrap:wrap; }
+  .mg-seg button { border:0; background:transparent; padding:7px 14px; border-radius:16px; font:500 13px 'DM Sans',sans-serif; color:var(--muted); cursor:pointer; }
+  .mg-seg button.on { background:var(--accent); color:#fff; }
+  .mg-stat { display:flex; flex-direction:column; gap:2px; }
+  .mg-stats { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+  @media (min-width:700px){ .mg-stats{ grid-template-columns:repeat(4,minmax(0,1fr)); } }
+  #mg-extra { width:100%; accent-color: var(--accent); }
+  .mg-level { transition: y .9s ease, height .9s ease; }
+  @media (prefers-reduced-motion: reduce){ .mg-level{ transition:none; } }
+</style>
+<div id="tab-mortgage" class="tab-content">
+<div class="main" style="max-width:760px">
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px">
+      <div class="card-title" style="margin:0">🏠 152 Harmony Circle</div>
+      <div style="font-size:12px;color:var(--muted)">Filled part = what's already yours</div>
+    </div>
+    <svg class="mg-svg" viewBox="0 0 500 400" role="img" aria-labelledby="mg-svg-title">
+      <title id="mg-svg-title">Drawing of the house, filled with color up to the share that is paid off</title>
+      <defs>
+        <symbol id="mg-house" viewBox="0 0 400 400">
+          <!-- third-storey loft (set back) -->
+          <rect x="92" y="78" width="150" height="44" style="fill:var(--h-siding)"/>
+          <g style="stroke:var(--h-line);stroke-width:1">
+            <line x1="92" y1="90" x2="242" y2="90"/><line x1="92" y1="101" x2="242" y2="101"/><line x1="92" y1="112" x2="242" y2="112"/>
+          </g>
+          <rect x="120" y="88" width="18" height="18" style="fill:var(--h-glass);stroke:var(--h-trim);stroke-width:3"/>
+          <rect x="160" y="88" width="18" height="18" style="fill:var(--h-glass);stroke:var(--h-trim);stroke-width:3"/>
+          <rect x="200" y="88" width="18" height="18" style="fill:var(--h-glass);stroke:var(--h-trim);stroke-width:3"/>
+          <rect x="84" y="70" width="166" height="9" style="fill:var(--h-trim)"/>
+          <!-- left hip roof over 2nd floor -->
+          <polygon points="22,132 40,118 230,118 230,132" style="fill:var(--h-roof)"/>
+          <rect x="22" y="130" width="210" height="6" style="fill:var(--h-trim)"/>
+          <!-- upper storey: shake -->
+          <rect x="34" y="136" width="332" height="98" style="fill:var(--h-shake)"/>
+          <g style="stroke:var(--h-trim);stroke-width:.8;opacity:.55">
+            <line x1="34" y1="152" x2="366" y2="152"/><line x1="34" y1="168" x2="366" y2="168"/><line x1="34" y1="184" x2="366" y2="184"/><line x1="34" y1="200" x2="366" y2="200"/><line x1="34" y1="216" x2="366" y2="216"/>
+          </g>
+          <!-- right gable -->
+          <polygon points="214,128 290,52 366,128" style="fill:var(--h-shake)"/>
+          <polyline points="204,134 290,46 376,134" style="fill:none;stroke:var(--h-trim);stroke-width:9;stroke-linejoin:miter"/>
+          <rect x="283" y="56" width="14" height="30" style="fill:var(--h-bracket)"/>
+          <rect x="238" y="98" width="13" height="30" style="fill:var(--h-bracket)"/>
+          <rect x="329" y="98" width="13" height="30" style="fill:var(--h-bracket)"/>
+          <!-- upper left window (3 panels, gridded sides) -->
+          <rect x="62" y="150" width="120" height="66" style="fill:var(--h-glass);stroke:var(--h-trim);stroke-width:5"/>
+          <g style="stroke:var(--h-trim);stroke-width:3">
+            <line x1="94" y1="150" x2="94" y2="216"/><line x1="150" y1="150" x2="150" y2="216"/>
+          </g>
+          <g style="stroke:var(--h-trim);stroke-width:1.2">
+            <line x1="62" y1="172" x2="94" y2="172"/><line x1="78" y1="150" x2="78" y2="172"/>
+            <line x1="150" y1="172" x2="182" y2="172"/><line x1="166" y1="150" x2="166" y2="172"/>
+            <line x1="94" y1="172" x2="150" y2="172"/><line x1="113" y1="150" x2="113" y2="172"/><line x1="131" y1="150" x2="131" y2="172"/>
+          </g>
+          <!-- upper right window in dark trim box -->
+          <rect x="252" y="138" width="78" height="92" style="fill:none;stroke:var(--h-trim);stroke-width:6"/>
+          <rect x="262" y="146" width="58" height="62" style="fill:var(--h-glass);stroke:var(--h-trim);stroke-width:4"/>
+          <line x1="291" y1="146" x2="291" y2="208" style="stroke:var(--h-trim);stroke-width:3"/>
+          <rect x="246" y="228" width="92" height="8" style="fill:var(--h-trim)"/>
+          <!-- belt band -->
+          <rect x="34" y="232" width="332" height="6" style="fill:var(--h-trim)"/>
+          <!-- main floor: lap siding -->
+          <rect x="34" y="238" width="332" height="82" style="fill:var(--h-siding)"/>
+          <g style="stroke:var(--h-line);stroke-width:1">
+            <line x1="34" y1="250" x2="366" y2="250"/><line x1="34" y1="262" x2="366" y2="262"/><line x1="34" y1="274" x2="366" y2="274"/><line x1="34" y1="286" x2="366" y2="286"/><line x1="34" y1="298" x2="366" y2="298"/><line x1="34" y1="310" x2="366" y2="310"/>
+          </g>
+          <!-- small left window -->
+          <rect x="44" y="252" width="22" height="52" style="fill:var(--h-glass);stroke:var(--h-trim);stroke-width:4"/>
+          <!-- big right window (6 panes) -->
+          <rect x="226" y="248" width="112" height="62" style="fill:var(--h-glass);stroke:var(--h-trim);stroke-width:5"/>
+          <g style="stroke:var(--h-trim);stroke-width:3">
+            <line x1="263" y1="248" x2="263" y2="310"/><line x1="301" y1="248" x2="301" y2="310"/><line x1="226" y1="270" x2="338" y2="270"/>
+          </g>
+          <!-- porch: roof, columns, door -->
+          <polygon points="66,226 196,226 202,238 60,238" style="fill:var(--h-roof)"/>
+          <rect x="80" y="238" width="12" height="82" style="fill:var(--h-col)"/>
+          <rect x="174" y="238" width="12" height="82" style="fill:var(--h-col)"/>
+          <rect x="114" y="248" width="36" height="72" style="fill:var(--h-door);stroke:var(--h-trim);stroke-width:3"/>
+          <rect x="122" y="255" width="20" height="10" style="fill:var(--h-glass)"/>
+          <rect x="94" y="262" width="16" height="9" style="fill:var(--h-trim)"/>
+          <!-- stone base -->
+          <rect x="34" y="320" width="332" height="34" style="fill:var(--h-stone)"/>
+          <g style="stroke:var(--h-trim);stroke-width:.8;opacity:.6">
+            <line x1="34" y1="331" x2="366" y2="331"/><line x1="34" y1="342" x2="366" y2="342"/>
+            <line x1="60" y1="320" x2="60" y2="331"/><line x1="110" y1="331" x2="110" y2="342"/><line x1="230" y1="320" x2="230" y2="331"/><line x1="290" y1="331" x2="290" y2="342"/><line x1="340" y1="320" x2="340" y2="331"/><line x1="260" y1="342" x2="260" y2="354"/>
+          </g>
+          <!-- steps + railings -->
+          <polygon points="88,320 178,320 186,330 80,330" style="fill:var(--h-steps)"/>
+          <polygon points="80,330 186,330 194,341 72,341" style="fill:var(--h-steps);opacity:.9"/>
+          <polygon points="72,341 194,341 202,354 64,354" style="fill:var(--h-steps);opacity:.8"/>
+          <g style="stroke:var(--h-trim);stroke-width:2.5;fill:none">
+            <polyline points="96,300 76,348"/><line x1="76" y1="320" x2="76" y2="348"/><line x1="96" y1="300" x2="96" y2="320"/>
+            <polyline points="168,300 188,348"/><line x1="188" y1="320" x2="188" y2="348"/><line x1="168" y1="300" x2="168" y2="320"/>
+          </g>
+          <!-- downspouts -->
+          <rect x="36" y="136" width="3" height="218" style="fill:var(--h-trim)"/>
+          <rect x="361" y="136" width="3" height="218" style="fill:var(--h-trim)"/>
+          <!-- pot lights along the eaves -->
+          <g style="fill:var(--h-light)">
+            <circle cx="60" cy="140" r="2.4"/><circle cx="100" cy="140" r="2.4"/><circle cx="140" cy="140" r="2.4"/><circle cx="180" cy="140" r="2.4"/>
+            <circle cx="236" cy="112" r="2.4"/><circle cx="262" cy="86" r="2.4"/><circle cx="318" cy="86" r="2.4"/><circle cx="344" cy="112" r="2.4"/>
+            <circle cx="100" cy="242" r="2.2"/><circle cx="133" cy="242" r="2.2"/><circle cx="166" cy="242" r="2.2"/>
+          </g>
+        </symbol>
+        <clipPath id="mg-clip"><rect id="mg-clip-rect" class="mg-level" x="0" y="354" width="400" height="0"/></clipPath>
+      </defs>
+      <!-- ground -->
+      <rect x="0" y="354" width="500" height="46" fill="#ece7dc"/>
+      <rect x="0" y="354" width="500" height="3" fill="#d9d2c3"/>
+      <!-- empty house -->
+      <use href="#mg-house" class="mg-ghost" x="0" y="0" width="400" height="400"/>
+      <!-- paid-off part in full color -->
+      <g clip-path="url(#mg-clip)">
+        <use href="#mg-house" class="mg-color" x="0" y="0" width="400" height="400"/>
+      </g>
+      <!-- fill level line + label -->
+      <line id="mg-level-line" class="mg-level" x1="20" x2="380" y1="354" y2="354" stroke="#2d5a3d" stroke-width="2" stroke-dasharray="5 4"/>
+      <!-- side ruler -->
+      <line x1="404" y1="46" x2="404" y2="354" stroke="#c9c4b8" stroke-width="2"/>
+      <g id="mg-ruler" font-family="DM Sans, sans-serif" font-size="14"></g>
+    </svg>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px">
+      <div><span id="mg-own" style="font-size:30px;font-weight:700;color:var(--accent)">—</span> <span style="color:var(--muted);font-size:13px">of the house is yours</span></div>
+      <div style="font-size:13px;color:var(--muted)" id="mg-mortgage-paid"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">What if…</div>
+    <div class="mg-seg" role="group" aria-label="Payment scenario">
+      <button id="mg-s-base" class="on" onclick="setMgScenario(false)">Today's pace</button>
+      <button id="mg-s-ref" onclick="setMgScenario(true)">+ spring refunds</button>
+    </div>
+    <div style="margin-top:16px">
+      <label for="mg-extra" style="display:flex;justify-content:space-between;font-size:14px"><span>Extra per month</span><strong class="mono" id="mg-extra-val">$0</strong></label>
+      <input type="range" id="mg-extra" min="0" max="866" step="50" value="0" oninput="renderMortgage()">
+      <div style="font-size:11px;color:var(--muted)">Your contract allows raising the payment by up to 20% ($866/mo) each year.</div>
+    </div>
+    <div class="mg-stats" style="margin-top:18px">
+      <div class="mg-stat"><span class="stat-label">Mortgage-free</span><span class="stat-value stat-green" id="mg-free" style="font-size:22px">—</span><span class="stat-sub" id="mg-free-sub"></span></div>
+      <div class="mg-stat"><span class="stat-label">Half the house yours</span><span class="stat-value" id="mg-half" style="font-size:22px">—</span><span class="stat-sub">50% of $883,757</span></div>
+      <div class="mg-stat"><span class="stat-label">At renewal (Dec 2028)</span><span class="stat-value" id="mg-renew" style="font-size:22px">—</span><span class="stat-sub">balance to refinance</span></div>
+      <div class="mg-stat"><span class="stat-label">Interest until mortgage-free</span><span class="stat-value stat-warn" id="mg-int" style="font-size:22px">—</span><span class="stat-sub" id="mg-int-sub"></span></div>
+    </div>
+  </div>
+
+  <details class="card">
+    <summary style="cursor:pointer;font-weight:600">Update the balance &amp; assumptions</summary>
+    <div style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap;align-items:end">
+      <label style="font-size:13px">Balance from CMLS<br>$<input type="number" id="mg-bal" step="100" style="width:130px" onchange="onMgBalance()"></label>
+      <label style="font-size:13px">As of<br><input type="month" id="mg-asof" onchange="onMgBalance()" style="padding:6px;border:1px solid var(--border);border-radius:8px;font-family:inherit"></label>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.6">Bought for $883,757 · down payment $309,315 · mortgage at signing $574,442 · 5.56% fixed (compounded semi-annually) · $4,332/mo. Assumes the same rate after the Dec 2028 renewal. "+ spring refunds" uses the refunds from 🎯 The Plan: the first $45K builds the emergency fund, the rest goes to the mortgage each April. "Yours" is based on the purchase price, not today's market value. Your commitment letter's $150,282 "cost of borrowing" covers only the current term; the figure here is all interest until the mortgage is fully paid.</div>
+  </details>
+
+</div>
+</div>
+<!-- ========== END MORTGAGE TAB ========== -->
 
 <!-- ========== TAB: SCENARIOS ========== -->
 <div id="tab-scenarios" class="tab-content">
@@ -962,7 +1129,10 @@ const otherCats = [
 
 let carState = { mazda: true, tesla: true };
 let actuals = {};
-const LS_KEY = 'vartazarov_v4';
+// Preprod = the copy served from /preprod/ — test mode: own local storage, no writes to the Google Sheet
+const IS_PREPROD = /\/preprod(\/|$)/.test(location.pathname);
+const LS_PREFIX = IS_PREPROD ? 'pre_' : '';
+const LS_KEY = LS_PREFIX + 'vartazarov_v4';
 
 function saveLS() { try { localStorage.setItem(LS_KEY, JSON.stringify(actuals)); } catch(e){} }
 function loadLS() { try { const d = localStorage.getItem(LS_KEY); if(d) actuals = JSON.parse(d); } catch(e){} }
@@ -976,6 +1146,7 @@ function showTab(id, el) {
   el.classList.add('active');
   if(id==='logger') { buildCatGrid(); initLoggerDate(); fillInvForm(); }
   if(id==='retirement') { updateRetirement(); }
+  if(id==='mortgage') { renderMortgage(); }
   if(id==='scenarios') { buildScenarioChart(); updateMazdaCalc(); }
 }
 
@@ -1074,7 +1245,7 @@ const ENG = {
   start: { K_RRSP:275503, K_TFSA:101591, A_RRSP:141000, A_TFSA:44000 },
   salaryK: 233000, salaryA: 165000,
   newRoomK: 33810, newRoomA: 29700,     // yearly new RRSP room
-  mortgage: 533446, mortRate: 0.0556, mortPay: 4332,
+  mortgage: 531557.51, mortRate: 0.0556, mortPay: 4332,
   efTarget: 45000, ret: 0.07, hisa: 0.03, infl: 0.025,
   kLastYear: 2052, aLastYear: 2048,
 };
@@ -1086,7 +1257,7 @@ function ymKey(y,m){ return y+'-'+String(m).padStart(2,'0'); }
 
 function runPlan(S, actuals, opt) {
   opt = opt || {};
-  const r=ENG.ret/12, h=ENG.hisa/12, mr=ENG.mortRate/12;
+  const r=ENG.ret/12, h=ENG.hisa/12, mr=Math.pow(1+ENG.mortRate/2,1/6)-1;  // semi-annual compounding
   let KR=ENG.start.K_RRSP, KT=ENG.start.K_TFSA, AR=ENG.start.A_RRSP, AT=ENG.start.A_TFSA, NR=0, EF=0;
   let bal=ENG.mortgage, interest=0, kRoom=S.k_room, aRoom=S.a_room;
   const Kc={}, Ac={}, years={}, refunds={}, ev={};
@@ -1129,11 +1300,11 @@ function runPlan(S, actuals, opt) {
 function todaysMoney(v,yr){ return v/Math.pow(1+ENG.infl, yr+1-2026.83); }
 
 // ============ PLAN STATE (shared via Google Sheet, cached locally) ============
-const PLAN_DEFAULTS = { k_rrsp:3000, a_rrsp:2000, k_tfsa:0, a_tfsa:0, k_room:74654, a_room:121428 };  // Artemii: CRA 2026 deduction limit
+const PLAN_DEFAULTS = { k_rrsp:3000, a_rrsp:2000, k_tfsa:0, a_tfsa:0, k_room:74654, a_room:121428, mort_bal:531557.51, mort_asof:'2026-10' };  // Artemii: CRA 2026 deduction limit
 let planS = Object.assign({}, PLAN_DEFAULTS), planTs = 0;
 let invActuals = {};          // { 'YYYY-MM': {k_rrsp,a_rrsp,k_tfsa,a_tfsa} }
 let lastRun = null, lastSpend = null, retChart = null, saveTimer = null;
-const LS_PLAN='vf_plan_v1', LS_INV='vf_inv_v1';
+const LS_PLAN=LS_PREFIX+'vf_plan_v1', LS_INV=LS_PREFIX+'vf_inv_v1';
 try { const d=JSON.parse(localStorage.getItem(LS_PLAN)||'null'); if(d&&d.s){ planS=Object.assign({},PLAN_DEFAULTS,d.s); planTs=d.ts||0; } } catch(e){}
 try { invActuals=JSON.parse(localStorage.getItem(LS_INV)||'{}')||{}; } catch(e){}
 
@@ -1445,8 +1616,105 @@ function renderRecentLog() {
     </div>`).join('');
 }
 
+// ============ MORTGAGE TAB ============
+const MG = { price:883756.75, start:574441.89, pay:4332, rate:0.0556, ef:45000, top:46, ground:354 };
+let mgRefunds = false;
+function mgYm(a){ return a ? MON[a[1]-1]+' '+a[0] : '—'; }
+function mgSim(extra, useRef) {
+  const mr = Math.pow(1+MG.rate/2, 1/6) - 1;              // Canadian fixed: semi-annual compounding
+  let b = planS.mort_bal || 531557.51;
+  let [y, m] = String(planS.mort_asof || '2026-10').split('-').map(Number);
+  const R = (lastRun && lastRun.refunds) || {};
+  let intr = 0, ef = 0, paid = null, half = null, renew = null;
+  const own = {}; own[y] = (MG.price - b) / MG.price;
+  if (MG.price - b >= MG.price/2) half = [y, m];
+  while (b > 0 && y < 2060) {
+    m++; if (m === 13) { m = 1; y++; }
+    const i = b * mr; intr += i; b += i - MG.pay - extra;
+    if (useRef && m === 4 && R[y]) { let r = R[y]; if (ef < MG.ef) { const t = Math.min(r, MG.ef - ef); ef += t; r -= t; } b -= r; }
+    if (b <= 0) { b = 0; paid = [y, m]; }
+    if (!half && MG.price - b >= MG.price/2) half = [y, m];
+    if (y === 2028 && m === 12) renew = b;
+    if (m === 12 || b === 0) own[y] = (MG.price - b) / MG.price;
+  }
+  if (renew === null) renew = 0;
+  return { paid, half, renew, intr, own };
+}
+function setMgScenario(on) {
+  mgRefunds = on;
+  document.getElementById('mg-s-base').classList.toggle('on', !on);
+  document.getElementById('mg-s-ref').classList.toggle('on', on);
+  renderMortgage();
+}
+function onMgBalance() {
+  const v = parseFloat(document.getElementById('mg-bal').value), a = document.getElementById('mg-asof').value;
+  if (!isNaN(v) && v >= 0) planS.mort_bal = v;
+  if (a) planS.mort_asof = a;
+  planTs = Date.now();
+  try { localStorage.setItem(LS_PLAN, JSON.stringify({s:planS, ts:planTs})); } catch(e){}
+  clearTimeout(saveTimer); saveTimer = setTimeout(pushPlanSettings, 1200);
+  renderMortgage();
+}
+function renderMortgage() {
+  if (!lastRun) renderPlan();
+  const extra = parseFloat(document.getElementById('mg-extra').value) || 0;
+  document.getElementById('mg-extra-val').textContent = '$' + extra.toLocaleString();
+  const bal = planS.mort_bal || 531557.51;
+  const balEl = document.getElementById('mg-bal'); if (document.activeElement !== balEl) balEl.value = Math.round(bal);
+  const asEl = document.getElementById('mg-asof'); if (document.activeElement !== asEl) asEl.value = planS.mort_asof || '2026-10';
+  const s = mgSim(extra, mgRefunds), base = mgSim(0, false);
+  const ownNow = (MG.price - bal) / MG.price;
+  // fill the house
+  const H = MG.ground - MG.top, yFill = MG.ground - ownNow * H;
+  const cr = document.getElementById('mg-clip-rect'); cr.setAttribute('y', yFill); cr.setAttribute('height', MG.ground - yFill);
+  const ll = document.getElementById('mg-level-line'); ll.setAttribute('y1', yFill); ll.setAttribute('y2', yFill);
+  document.getElementById('mg-own').textContent = (ownNow*100).toFixed(1) + '%';
+  document.getElementById('mg-mortgage-paid').textContent = `Mortgage: ${$n(MG.start - bal)} of ${$n(MG.start)} paid (${((MG.start-bal)/MG.start*100).toFixed(1)}%) · ${$n(bal)} left`;
+  // side ruler: now, renewal, a few checkpoints, payoff
+  const startY = Number(String(planS.mort_asof || '2026-10').slice(0,4));
+  const endY = s.paid ? s.paid[0] : 2059;
+  const marks = [{y:startY, f:ownNow, now:true}];
+  const span = endY - startY, step = span > 12 ? 4 : span > 6 ? 3 : 2;
+  for (let y = startY + 2; y < endY; y += step) if (s.own[y] !== undefined) marks.push({y, f:s.own[y]});
+  if (s.paid) marks.push({y:endY, f:1, done:true});
+  // keep labels at least 26 units apart; the payoff mark always wins over its neighbour
+  const kept = [];
+  marks.forEach(k => {
+    const pos = MG.ground - k.f * H;
+    while (kept.length && kept[kept.length-1].pos - pos < 26) { if (k.done && !kept[kept.length-1].now) kept.pop(); else return; }
+    kept.push(Object.assign({pos}, k));
+  });
+  let svg = '';
+  kept.forEach(k => {
+    const pos = k.pos;
+    const col = k.now ? '#2d5a3d' : k.done ? '#c17f2a' : '#6b6960', w = k.now || k.done ? 700 : 500;
+    const label = k.done ? `🔑 ${mgYm(s.paid)}` : k.now ? `Now · ${Math.round(k.f*100)}%` : `${k.y} · ${Math.round(k.f*100)}%`;
+    svg += `<line x1="398" x2="410" y1="${pos}" y2="${pos}" stroke="${col}" stroke-width="2"/><circle cx="404" cy="${pos}" r="${k.now||k.done?4.5:3}" fill="${col}"/><text x="414" y="${pos+5}" fill="${col}" font-weight="${w}">${label}</text>`;
+  });
+  document.getElementById('mg-ruler').innerHTML = svg;
+  // stats
+  document.getElementById('mg-free').textContent = mgYm(s.paid);
+  const monthsEarly = s.paid && base.paid ? (base.paid[0]*12+base.paid[1]) - (s.paid[0]*12+s.paid[1]) : 0;
+  document.getElementById('mg-free-sub').textContent = monthsEarly > 0 ? `${Math.floor(monthsEarly/12)} yr ${monthsEarly%12} mo earlier than today's pace` : `at $${MG.pay.toLocaleString()}/mo`;
+  document.getElementById('mg-half').textContent = mgYm(s.half);
+  document.getElementById('mg-renew').textContent = $n(s.renew);
+  document.getElementById('mg-int').textContent = '$' + Math.round(s.intr/1000).toLocaleString() + 'K';
+  const saved = base.intr - s.intr;
+  document.getElementById('mg-int-sub').textContent = saved > 500 ? `saves ~$${Math.round(saved/1000)}K vs today's pace` : 'all remaining interest, not just this term';
+}
+
 // ============ INIT ============
 renderAll();
+if (IS_PREPROD) {
+  // block writes to the real Google Sheet while testing
+  const _fetch = window.fetch.bind(window);
+  window.fetch = (url, opt) => (String(url).indexOf(SHEET_ENDPOINT)===0 && opt && opt.method==='POST')
+    ? Promise.resolve(new Response('{"status":"test"}')) : _fetch(url, opt);
+  const b = document.createElement('div');
+  b.style.cssText = 'background:#c17f2a;color:#fff;font:600 12px/1.4 system-ui,sans-serif;text-align:center;padding:6px 16px';
+  b.textContent = '🧪 PREPROD · test copy · nothing is saved to the shared Google Sheet';
+  document.body.insertBefore(b, document.body.firstChild);
+}
 fillPlanInputs(); renderPlan(); loadShared();
 const now = new Date();
 document.getElementById('monthLabel').textContent =
@@ -1458,6 +1726,7 @@ document.getElementById('monthLabel').textContent =
   <div id="pin-box">
     <h2>🐈 Flerken</h2>
     <p>Looks like a cat. Holds a universe.<br>Enter PIN to continue</p>
+    <div id="flerken-version" style="font-size:10px;color:#9ca3af;margin-top:-14px;margin-bottom:14px;font-family:monospace">v2026.10.21 · mortgage-tab</div>
     <div id="pin-dots">
       <div class="pin-dot" id="d0"></div>
       <div class="pin-dot" id="d1"></div>
