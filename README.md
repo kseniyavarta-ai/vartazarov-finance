@@ -1,29 +1,34 @@
-# Vartazarov Family Finance
+# 🐈 Flerken — Vartazarov family finance
 
-Private household budget & financial planning app.
+Household budget, retirement plan and mortgage tracker.
 
-## Viewing
+- **Live app:** https://kseniyavarta-ai.github.io/vartazarov-finance/
+- **Previews:** https://kseniyavarta-ai.github.io/vartazarov-finance/previews/<file-name>
 
-Open the live app at:
-**https://[your-github-username].github.io/vartazarov-finance**
+## File naming
 
-(Available once GitHub Pages is deployed — takes ~1 min after first push.)
+| File | What it is |
+|---|---|
+| `index.html` | **The live app.** Never renamed — GitHub Pages only serves this name. |
+| `previews/index_YYYY-MM-DD_what-changed.html` | A version to test before it goes live, e.g. `previews/index_2026-10-21_mortgage-tab.html`. Lowercase, words joined with `-`. |
+| `CHANGELOG.md` | One line per version: date, label, what changed. |
 
-## Updating
+Every version shows its label on the PIN screen (e.g. `v2026.10.21 · mortgage-tab`), so you can always tell which one you are looking at.
 
-1. Edit `index.html` locally (or ask Claude to update it)
-2. Commit and push to `main`
-3. GitHub auto-deploys in ~1 minute
+## How a change goes live
+
+1. New version is added as `previews/index_<date>_<what-changed>.html` and pushed.
+2. Test it at its preview link (it is a separate copy, but it does use the shared Google Sheet).
+3. When approved, the same file is copied over `index.html` and pushed. Live in ~1 minute.
+4. A line is added to `CHANGELOG.md`.
+
+Commit messages follow the same idea: `<area>: <what changed>`, e.g. `mortgage: add house fill tab`.
 
 ## Structure
 
 ```
-index.html                        ← the entire app (single file)
-.github/workflows/deploy.yml      ← tells GitHub Pages to serve it
-README.md                         ← this file
+index.html                     live app (single file)
+previews/                      versions waiting for approval
+CHANGELOG.md                   history of versions
+.github/workflows/main.yml     deploys to GitHub Pages on every push to main
 ```
-
-## Access
-
-This is a **private repository** — only people you invite can see it.
-To add Artemii: GitHub → Settings → Collaborators → Add people.

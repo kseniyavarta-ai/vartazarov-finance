@@ -580,7 +580,7 @@
       <div class="mg-stat"><span class="stat-label">Mortgage-free</span><span class="stat-value stat-green" id="mg-free" style="font-size:22px">—</span><span class="stat-sub" id="mg-free-sub"></span></div>
       <div class="mg-stat"><span class="stat-label">Half the house yours</span><span class="stat-value" id="mg-half" style="font-size:22px">—</span><span class="stat-sub">50% of $883,757</span></div>
       <div class="mg-stat"><span class="stat-label">At renewal (Dec 2028)</span><span class="stat-value" id="mg-renew" style="font-size:22px">—</span><span class="stat-sub">balance to refinance</span></div>
-      <div class="mg-stat"><span class="stat-label">Interest still to pay</span><span class="stat-value stat-warn" id="mg-int" style="font-size:22px">—</span><span class="stat-sub" id="mg-int-sub"></span></div>
+      <div class="mg-stat"><span class="stat-label">Interest until mortgage-free</span><span class="stat-value stat-warn" id="mg-int" style="font-size:22px">—</span><span class="stat-sub" id="mg-int-sub"></span></div>
     </div>
   </div>
 
@@ -590,7 +590,7 @@
       <label style="font-size:13px">Balance from CMLS<br>$<input type="number" id="mg-bal" step="100" style="width:130px" onchange="onMgBalance()"></label>
       <label style="font-size:13px">As of<br><input type="month" id="mg-asof" onchange="onMgBalance()" style="padding:6px;border:1px solid var(--border);border-radius:8px;font-family:inherit"></label>
     </div>
-    <div style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.6">Bought 2023 for $883,757 · down payment $309,315 · mortgage at signing $574,442 · 5.56% fixed (compounded semi-annually) · $4,332/mo. Assumes the same rate after the Dec 2028 renewal. "+ spring refunds" uses the refunds from 🎯 The Plan: the first $45K builds the emergency fund, the rest goes to the mortgage each April. "Yours" is based on the purchase price, not today's market value.</div>
+    <div style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.6">Bought for $883,757 · down payment $309,315 · mortgage at signing $574,442 · 5.56% fixed (compounded semi-annually) · $4,332/mo. Assumes the same rate after the Dec 2028 renewal. "+ spring refunds" uses the refunds from 🎯 The Plan: the first $45K builds the emergency fund, the rest goes to the mortgage each April. "Yours" is based on the purchase price, not today's market value. Your commitment letter's $150,282 "cost of borrowing" covers only the current term; the figure here is all interest until the mortgage is fully paid.</div>
   </details>
 
 </div>
@@ -1245,7 +1245,7 @@ const ENG = {
   start: { K_RRSP:275503, K_TFSA:101591, A_RRSP:141000, A_TFSA:44000 },
   salaryK: 233000, salaryA: 165000,
   newRoomK: 33810, newRoomA: 29700,     // yearly new RRSP room
-  mortgage: 533446, mortRate: 0.0556, mortPay: 4332,
+  mortgage: 531557.51, mortRate: 0.0556, mortPay: 4332,
   efTarget: 45000, ret: 0.07, hisa: 0.03, infl: 0.025,
   kLastYear: 2052, aLastYear: 2048,
 };
@@ -1257,7 +1257,7 @@ function ymKey(y,m){ return y+'-'+String(m).padStart(2,'0'); }
 
 function runPlan(S, actuals, opt) {
   opt = opt || {};
-  const r=ENG.ret/12, h=ENG.hisa/12, mr=ENG.mortRate/12;
+  const r=ENG.ret/12, h=ENG.hisa/12, mr=Math.pow(1+ENG.mortRate/2,1/6)-1;  // semi-annual compounding
   let KR=ENG.start.K_RRSP, KT=ENG.start.K_TFSA, AR=ENG.start.A_RRSP, AT=ENG.start.A_TFSA, NR=0, EF=0;
   let bal=ENG.mortgage, interest=0, kRoom=S.k_room, aRoom=S.a_room;
   const Kc={}, Ac={}, years={}, refunds={}, ev={};
@@ -1300,7 +1300,7 @@ function runPlan(S, actuals, opt) {
 function todaysMoney(v,yr){ return v/Math.pow(1+ENG.infl, yr+1-2026.83); }
 
 // ============ PLAN STATE (shared via Google Sheet, cached locally) ============
-const PLAN_DEFAULTS = { k_rrsp:3000, a_rrsp:2000, k_tfsa:0, a_tfsa:0, k_room:74654, a_room:121428, mort_bal:533446, mort_asof:'2026-10' };  // Artemii: CRA 2026 deduction limit
+const PLAN_DEFAULTS = { k_rrsp:3000, a_rrsp:2000, k_tfsa:0, a_tfsa:0, k_room:74654, a_room:121428, mort_bal:531557.51, mort_asof:'2026-10' };  // Artemii: CRA 2026 deduction limit
 let planS = Object.assign({}, PLAN_DEFAULTS), planTs = 0;
 let invActuals = {};          // { 'YYYY-MM': {k_rrsp,a_rrsp,k_tfsa,a_tfsa} }
 let lastRun = null, lastSpend = null, retChart = null, saveTimer = null;
@@ -1622,7 +1622,7 @@ let mgRefunds = false;
 function mgYm(a){ return a ? MON[a[1]-1]+' '+a[0] : '—'; }
 function mgSim(extra, useRef) {
   const mr = Math.pow(1+MG.rate/2, 1/6) - 1;              // Canadian fixed: semi-annual compounding
-  let b = planS.mort_bal || 533446;
+  let b = planS.mort_bal || 531557.51;
   let [y, m] = String(planS.mort_asof || '2026-10').split('-').map(Number);
   const R = (lastRun && lastRun.refunds) || {};
   let intr = 0, ef = 0, paid = null, half = null, renew = null;
@@ -1659,7 +1659,7 @@ function renderMortgage() {
   if (!lastRun) renderPlan();
   const extra = parseFloat(document.getElementById('mg-extra').value) || 0;
   document.getElementById('mg-extra-val').textContent = '$' + extra.toLocaleString();
-  const bal = planS.mort_bal || 533446;
+  const bal = planS.mort_bal || 531557.51;
   const balEl = document.getElementById('mg-bal'); if (document.activeElement !== balEl) balEl.value = Math.round(bal);
   const asEl = document.getElementById('mg-asof'); if (document.activeElement !== asEl) asEl.value = planS.mort_asof || '2026-10';
   const s = mgSim(extra, mgRefunds), base = mgSim(0, false);
@@ -1700,7 +1700,7 @@ function renderMortgage() {
   document.getElementById('mg-renew').textContent = $n(s.renew);
   document.getElementById('mg-int').textContent = '$' + Math.round(s.intr/1000).toLocaleString() + 'K';
   const saved = base.intr - s.intr;
-  document.getElementById('mg-int-sub').textContent = saved > 500 ? `saves ~$${Math.round(saved/1000)}K vs today's pace` : 'from now until it is paid off';
+  document.getElementById('mg-int-sub').textContent = saved > 500 ? `saves ~$${Math.round(saved/1000)}K vs today's pace` : 'all remaining interest, not just this term';
 }
 
 // ============ INIT ============
@@ -1726,6 +1726,7 @@ document.getElementById('monthLabel').textContent =
   <div id="pin-box">
     <h2>🐈 Flerken</h2>
     <p>Looks like a cat. Holds a universe.<br>Enter PIN to continue</p>
+    <div id="flerken-version" style="font-size:10px;color:#9ca3af;margin-top:-14px;margin-bottom:14px;font-family:monospace">v2026.10.21 · mortgage-tab</div>
     <div id="pin-dots">
       <div class="pin-dot" id="d0"></div>
       <div class="pin-dot" id="d1"></div>
