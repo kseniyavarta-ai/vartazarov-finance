@@ -1,0 +1,1789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flerken</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E🐈%3C/text%3E%3C/svg%3E">
+<meta name="apple-mobile-web-app-title" content="Flerken">
+<meta name="theme-color" content="#2d5a3d">
+<style>
+#pin-overlay {
+  position:fixed;inset:0;z-index:99999;
+  background:#1a1a2e;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'DM Sans',system-ui,sans-serif;
+}
+#pin-box {
+  background:#fff;border-radius:16px;padding:40px 36px;
+  text-align:center;width:300px;box-shadow:0 20px 60px rgba(0,0,0,.4);
+}
+#pin-box h2 { margin:0 0 6px;font-size:20px;color:#1a1a2e; }
+#pin-box p  { margin:0 0 24px;font-size:13px;color:#6b7280; }
+#pin-dots   { display:flex;gap:12px;justify-content:center;margin-bottom:24px; }
+.pin-dot    { width:14px;height:14px;border-radius:50%;border:2px solid #d1d5db;background:transparent;transition:background .15s; }
+.pin-dot.filled { background:#4f6ef7;border-color:#4f6ef7; }
+#pin-keys   { display:grid;grid-template-columns:repeat(3,1fr);gap:10px; }
+.pin-key    {
+  padding:14px;border-radius:10px;border:1.5px solid #e5e7eb;
+  background:#f9fafb;font-size:18px;font-weight:600;color:#1a1a2e;
+  cursor:pointer;transition:background .1s;user-select:none;
+}
+.pin-key:hover  { background:#ede9fe; border-color:#4f6ef7; }
+.pin-key:active { background:#ddd6fe; }
+#pin-error  { color:#ef4444;font-size:13px;margin-top:14px;min-height:18px; }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #f7f7f5;
+    --card: #ffffff;
+    --border: #e8e6e1;
+    --text: #1a1a18;
+    --muted: #6b6960;
+    --accent: #2d5a3d;
+    --accent2: #4a7c59;
+    --warn: #c17f2a;
+    --warn-bg: #fdf3e3;
+    --danger: #b23a48;
+    --danger-bg: #fceef0;
+    --blue: #2563a8;
+    --blue-bg: #eef3fb;
+    --purple: #6b3fa0;
+    --purple-bg: #f3eefb;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; }
+  .header { background: var(--card); border-bottom: 1px solid var(--border); padding: 16px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .logo { font-weight: 700; font-size: 17px; letter-spacing: -0.3px; }
+  .logo span { color: var(--accent); }
+  .header-right { color: var(--muted); font-size: 13px; }
+  .tabs { display: flex; gap: 2px; background: var(--card); border-bottom: 1px solid var(--border); padding: 0 28px; overflow-x: auto; }
+  .tab { padding: 13px 18px; cursor: pointer; font-size: 14px; font-weight: 500; color: var(--muted); border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.15s; user-select: none; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .main { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); margin-bottom: 16px; }
+  .card-title { font-weight: 600; font-size: 15px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  @media (max-width: 768px) { .grid-2,.grid-3,.grid-4 { grid-template-columns: 1fr; } .main { padding: 14px 12px; } }
+  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow); }
+  .stat-label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
+  .stat-value { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+  .stat-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .stat-green { color: var(--accent); }
+  .stat-warn { color: var(--warn); }
+  .stat-red { color: var(--danger); }
+  .stat-blue { color: var(--blue); }
+  .budget-row { display: flex; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--border); gap: 10px; }
+  .budget-row:last-child { border-bottom: none; }
+  .budget-cat { flex: 1; font-size: 14px; min-width: 0; }
+  .budget-cat-name { font-weight: 500; }
+  .budget-cat-sub { font-size: 11px; color: var(--muted); }
+  .budget-budget { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--muted); min-width: 70px; text-align: right; }
+  .budget-actual-wrap { min-width: 100px; }
+  .budget-actual { font-family: 'DM Mono', monospace; font-size: 13px; width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; text-align: right; background: var(--bg); outline: none; }
+  .budget-actual:focus { border-color: var(--accent); background: #fff; }
+  .budget-bar-wrap { flex: 1; min-width: 60px; max-width: 120px; }
+  .budget-bar-bg { background: var(--border); border-radius: 4px; height: 5px; }
+  .budget-bar-fill { height: 5px; border-radius: 4px; background: var(--accent2); transition: width 0.3s; }
+  .budget-bar-fill.over { background: var(--danger); }
+  .budget-delta { font-family: 'DM Mono', monospace; font-size: 11px; min-width: 55px; text-align: right; }
+  .delta-pos { color: var(--accent); }
+  .delta-neg { color: var(--danger); }
+  .banner { padding: 13px 16px; border-radius: var(--radius); font-size: 14px; margin-bottom: 16px; display: flex; gap: 10px; align-items: flex-start; line-height: 1.5; }
+  .banner-warn { background: var(--warn-bg); border: 1px solid #e6c97a; color: #7a4f00; }
+  .banner-info { background: var(--blue-bg); border: 1px solid #a8c5e8; color: var(--blue); }
+  .banner-ok { background: #eefaf2; border: 1px solid #99dcb4; color: #1a5c34; }
+  .banner-purple { background: var(--purple-bg); border: 1px solid #c4a8e8; color: var(--purple); }
+  .scenario-bar { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; align-items: center; }
+  .scenario-btn { padding: 7px 15px; border-radius: 20px; border: 1.5px solid var(--border); background: var(--card); cursor: pointer; font-size: 13px; font-weight: 500; color: var(--muted); transition: all 0.15s; }
+  .scenario-btn:hover { border-color: var(--accent2); color: var(--accent); }
+  .scenario-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+  .milestone { display: flex; gap: 12px; align-items: flex-start; padding: 11px 0; border-bottom: 1px solid var(--border); }
+  .milestone:last-child { border-bottom: none; }
+  .milestone-year { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 700; color: var(--accent); min-width: 38px; padding-top: 2px; }
+  .milestone-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); margin-top: 4px; flex-shrink: 0; }
+  .milestone-text { font-size: 14px; line-height: 1.5; }
+  .coast-card { background: var(--blue-bg); border: 1px solid #a8c5e8; border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
+  .ret-scenario-card { border: 2px solid var(--border); border-radius: var(--radius); padding: 14px 16px; cursor: pointer; background: var(--card); transition: all 0.15s; }
+  .ret-scenario-card:hover { border-color: var(--accent2); background: #f0f7f2; }
+  .ret-scenario-card.active { border-color: var(--accent); background: #f0f7f2; }
+  .rs-year { font-size: 26px; font-weight: 700; color: var(--accent); line-height: 1; }
+  .rs-ages { font-size: 12px; color: var(--muted); margin: 3px 0 4px; font-family: 'DM Mono', monospace; }
+  .rs-label { font-size: 13px; font-weight: 500; color: var(--text); }
+  .coast-title { font-weight: 700; font-size: 15px; color: var(--blue); margin-bottom: 12px; }
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .compare-table th { background: var(--bg); padding: 9px 12px; text-align: left; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--border); }
+  .compare-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr.highlight td { background: #f0f7f3; font-weight: 600; }
+  .mono { font-family: 'DM Mono', monospace; }
+  .chip { display: inline-block; padding: 2px 7px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .chip-green { background: #d4f1e0; color: #1a5c34; }
+  .chip-warn { background: #fde8c0; color: #7a4f00; }
+  .chip-blue { background: #d4e5f7; color: var(--blue); }
+  .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin: 22px 0 10px; }
+  input[type=number] { font-family: 'DM Mono', monospace; border: 1px solid var(--border); border-radius: 8px; padding: 7px 11px; font-size: 14px; outline: none; background: var(--bg); }
+  input[type=number]:focus { border-color: var(--accent); background: #fff; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .action-item { display: flex; gap: 13px; padding: 13px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+  .action-item:last-child { border-bottom: none; }
+  .action-num { width: 26px; height: 26px; background: var(--accent); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+  .action-num.warn { background: var(--warn); }
+  .action-num.blue { background: var(--blue); }
+  .action-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+  .action-desc { font-size: 13px; color: var(--muted); line-height: 1.55; }
+  .budget-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .card { overflow-x: auto; }
+  .budget-table th { background: var(--bg); padding: 9px 10px; text-align: left; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 2px solid var(--border); }
+  .budget-table td { padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .budget-table tr:last-child td { border-bottom: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">🐈 <span>Flerken</span> <span style="color:var(--muted);font-weight:400;font-size:13px">· Vartazarov family</span></div>
+  <div class="header-right" id="monthLabel">October 2026</div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('spending',this)">📊 This Month</div>
+  <div class="tab" onclick="showTab('logger',this)">📝 Log Expense</div>
+  <div class="tab" onclick="showTab('retirement',this)">🎯 The Plan</div>
+  <div class="tab" onclick="showTab('mortgage',this)">🏠 Mortgage</div>
+  <div class="tab" onclick="showTab('scenarios',this)">⚖️ Scenarios</div>
+  <div class="tab" onclick="showTab('actions',this)">✅ Action List</div>
+  <div class="tab" onclick="showTab('debt',this)">🔥 Debt Attack</div>
+</div>
+
+<!-- ========== TAB: SPENDING ========== -->
+<div id="tab-spending" class="tab-content active">
+<div class="main">
+
+  <div class="banner banner-warn" id="income-banner">
+    ⚠️ <span><strong>October transition month:</strong> Only Kseniya's income ($12,439 net/mo). Artemii returns ~November at $165K/yr = ~$9,450 net/mo. Combined Nov+: ~$21,889/mo.</span>
+  </div>
+
+  <div class="grid-4" style="margin-bottom:16px">
+    <div class="stat-card">
+      <div class="stat-label">Monthly Budget</div>
+      <div class="stat-value" id="total-budget">$12,060</div>
+      <div class="stat-sub">all categories</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Entered Actuals</div>
+      <div class="stat-value stat-blue" id="total-actual">$0</div>
+      <div class="stat-sub">so far this month</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Budget Remaining</div>
+      <div class="stat-value stat-green" id="total-remaining">$12,060</div>
+      <div class="stat-sub">budget left</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Savings (Nov+)</div>
+      <div class="stat-value stat-blue" id="savings-val">~$12,740</div>
+      <div class="stat-sub">combined net Nov+ − spend</div>
+    </div>
+  </div>
+
+  <div class="scenario-bar">
+    <span style="font-size:13px;color:var(--muted)">Toggle:</span>
+    <div class="scenario-btn active" id="btn-mazda" onclick="toggleCar('mazda',this)">🚗 Mazda Lease incl.</div>
+    <div class="scenario-btn active" id="btn-tesla" onclick="toggleCar('tesla',this)">⚡ Tesla Financing incl.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📌 Fixed Monthly Expenses</div>
+    <div id="fixed-rows"></div>
+    <div style="margin-top:12px;padding-top:12px;border-top:2px solid var(--border);display:flex;justify-content:space-between;font-weight:700;font-size:15px">
+      <span>Fixed Total</span><span class="mono" id="fixed-total-display">$7,466</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🛒 Variable Spending <span style="font-size:12px;color:var(--muted);font-weight:400;margin-left:8px">← enter actuals weekly</span></div>
+    <div id="variable-rows"></div>
+    <div style="margin-top:12px;padding-top:12px;border-top:2px solid var(--border);display:flex;justify-content:space-between;font-weight:700;font-size:15px">
+      <span>Variable Total</span><span class="mono" id="variable-total-display">$2,207 budget / $0 actual</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 Other Regular &amp; Sinking Funds <span style="font-size:12px;color:var(--muted);font-weight:400;margin-left:6px">← set aside monthly, spend when needed</span></div>
+    <div id="other-rows"></div>
+  </div>
+
+  <div style="background:var(--accent);color:white;border-radius:var(--radius);padding:18px 22px;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div>
+      <div style="font-size:12px;opacity:0.8">Total Monthly Spend</div>
+      <div style="font-size:28px;font-weight:700;letter-spacing:-0.5px" id="grand-total-display">$12,060</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:12px;opacity:0.8">Savings (Nov onward)</div>
+      <div style="font-size:28px;font-weight:700;letter-spacing:-0.5px" id="savings-total-display">$12,740/mo</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">💡 Spending Insights from 4 Months of Statements</div>
+    <div style="font-size:14px;line-height:1.8">
+      <p style="margin-bottom:6px">📦 <strong>Amazon</strong> ~$600/mo avg across both WS and RBC cards. ~2-3 purchases/week. The 48-hour rule before checkout would save ~$2,400/yr.</p>
+      <p style="margin-bottom:6px">👗 <strong>Fashion & Beauty</strong> ~$400/mo avg (BENDA BILI, Pandora, Sephora, Nike). US trip in Aug spiked to ~$1,020. Budget $400 for steady months.</p>
+      <p style="margin-bottom:6px">☕ <strong>Nespresso</strong> $90/mo avg — primarily in-store. Budget 1 order/month.</p>
+      <p style="margin-bottom:6px">🌿 <strong>Cannabis</strong> avg $86/mo across 3-4 purchases (Value Buds, In N Out Cannabis). Tracked for awareness.</p>
+      <p style="margin-bottom:6px">🐾 <strong>Pets</strong>: Tail Blazers food + FETCH dog insurance (~$362 quarterly). Budgeted $160/mo.</p>
+      <p>🇺🇦 <strong>Ukraine donations</strong> (Portmone + Sternenko): ~$130/mo avg. Kept as a values line item.</p>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ========== TAB: LOGGER ========== -->
+<div id="tab-logger" class="tab-content">
+<div class="main">
+
+  <div class="banner banner-info">
+    📱 <strong>Quick add at checkout.</strong> Tap a category, enter amount, hit Save. Both you and Artemii can log from any device — everything goes to your shared Google Sheet.
+  </div>
+
+  <!-- WHO IS LOGGING -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-title">👤 Who's paying?</div>
+    <div style="display:flex;gap:10px">
+      <div id="who-K" class="scenario-btn active" onclick="setWho('Kseniya',this)" style="flex:1;text-align:center;padding:12px">🙋‍♀️ Kseniya</div>
+      <div id="who-A" class="scenario-btn" onclick="setWho('Artemii',this)" style="flex:1;text-align:center;padding:12px">🙋‍♂️ Artemii</div>
+    </div>
+  </div>
+
+  <!-- CATEGORY PICKER -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-title">🏷️ Category</div>
+    <div id="cat-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px"></div>
+  </div>
+
+  <!-- AMOUNT + NOTE -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-title">💵 Amount & Note</div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <div style="position:relative;flex:1;min-width:120px">
+        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-weight:600;color:var(--muted)">$</span>
+        <input id="log-amount" type="number" step="0.01" min="0" placeholder="0.00"
+          style="width:100%;padding:12px 12px 12px 28px;font-size:20px;font-weight:700;border:2px solid var(--border);border-radius:10px;outline:none;background:var(--bg)"
+          onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+      </div>
+      <input id="log-note" type="text" placeholder="Note (optional — e.g. Costco run)"
+        style="flex:2;min-width:160px;padding:12px;font-size:14px;border:2px solid var(--border);border-radius:10px;outline:none;background:var(--bg)"
+        onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+    </div>
+  </div>
+
+  <!-- DATE -->
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title">📅 Date</div>
+    <input id="log-date" type="date"
+      style="padding:10px;font-size:14px;border:2px solid var(--border);border-radius:10px;outline:none;background:var(--bg);font-family:'DM Sans',sans-serif"
+      onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+  </div>
+
+  <!-- SAVE BUTTON -->
+  <button id="log-save-btn" onclick="logExpense()"
+    style="width:100%;padding:16px;background:var(--accent);color:white;border:none;border-radius:12px;font-size:17px;font-weight:700;cursor:pointer;letter-spacing:-0.3px;margin-bottom:12px">
+    ✅ Save Expense
+  </button>
+  <div id="log-status" style="text-align:center;font-size:14px;min-height:22px;margin-bottom:16px"></div>
+
+  <!-- RECENT LOG (local cache) -->
+  <div class="card">
+    <div class="card-title">🕐 Recent (this session)</div>
+    <div id="recent-log" style="font-size:13px;color:var(--muted)">Nothing logged yet this session.</div>
+  </div>
+
+
+  <!-- INVESTMENT ACTUALS -->
+  <div class="section-label" style="margin-top:28px">📈 Investments — what actually went in</div>
+  <div class="card">
+    <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Once a month, enter what really went into each account. 🎯 The Plan uses these instead of the planned amounts for that month and recalculates.</div>
+    <div style="margin-bottom:12px"><label style="font-size:13px">Month <input type="month" id="iv-month" style="padding:8px;border:2px solid var(--border);border-radius:8px;font-family:inherit" onchange="fillInvForm()"></label></div>
+    <div class="grid-2" style="gap:10px">
+      <label style="font-size:13px">Kseniya RRSP<br>$<input type="number" id="iv-k_rrsp" min="0" step="50" style="width:120px"></label>
+      <label style="font-size:13px">Artemii RRSP<br>$<input type="number" id="iv-a_rrsp" min="0" step="50" style="width:120px"></label>
+      <label style="font-size:13px">Kseniya TFSA<br>$<input type="number" id="iv-k_tfsa" min="0" step="50" style="width:120px"></label>
+      <label style="font-size:13px">Artemii TFSA<br>$<input type="number" id="iv-a_tfsa" min="0" step="50" style="width:120px"></label>
+    </div>
+    <button onclick="saveInvestment()" style="width:100%;padding:14px;margin-top:14px;background:var(--blue);color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer">💾 Save investments for this month</button>
+    <div id="iv-status" style="text-align:center;font-size:13px;min-height:20px;margin-top:8px"></div>
+    <div id="iv-list" style="font-size:13px;margin-top:6px"></div>
+  </div>
+</div>
+</div>
+<!-- ========== END LOGGER TAB ========== -->
+
+<!-- ========== TAB: THE PLAN ========== -->
+<div id="tab-retirement" class="tab-content">
+<div class="main" style="max-width:760px">
+
+  <div style="background:var(--accent);color:white;border-radius:var(--radius);padding:22px;margin-bottom:20px">
+    <div style="font-size:11px;opacity:.75;text-transform:uppercase;letter-spacing:.8px">The goal</div>
+    <div style="font-size:22px;font-weight:700;margin:4px 0 16px" id="pl-goal">Retire at 65 with $12,000/mo</div>
+    <div class="grid-2" style="gap:12px">
+      <div style="background:rgba(255,255,255,.12);border-radius:10px;padding:14px">
+        <div style="font-size:12px;opacity:.85">2048 · Artemii turns 65</div>
+        <div style="font-size:30px;font-weight:700;margin:2px 0" id="pl-48">—</div>
+        <div style="font-size:14px" id="pl-48s"></div>
+      </div>
+      <div style="background:rgba(255,255,255,.12);border-radius:10px;padding:14px">
+        <div style="font-size:12px;opacity:.85">2052 · Kseniya turns 65</div>
+        <div style="font-size:30px;font-weight:700;margin:2px 0" id="pl-52">—</div>
+        <div style="font-size:14px" id="pl-52s"></div>
+      </div>
+    </div>
+    <div style="font-size:11px;opacity:.75;margin-top:12px;line-height:1.5"><span id="pl-goalnote"></span> One household pot at two dates — not added together. Monthly income = 3.5% of the pot, in today's money, before tax.<br>+ CPP &amp; OAS from 65, not included: est. ~$2,981/mo combined today (~$1,490 each). OAS can be reduced if retirement income is high.</div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:6px"><div style="width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">1</div><div><div class="card-title" style="margin-bottom:2px">What we invest every month</div><div style="font-size:13px;color:var(--muted)">Change any amount — the whole plan recalculates and is saved for both of you.</div></div></div>
+    <table class="budget-table" style="margin-top:10px"><tbody>
+      <tr><td>Kseniya → RRSP<br><span style="font-size:11px;color:var(--muted)" id="in-k_rrsp-sub"></span></td><td style="text-align:right;white-space:nowrap">$<input type="number" id="in-k_rrsp" min="0" step="50" style="width:96px;text-align:right" oninput="onPlanInput()"></td></tr>
+      <tr><td>Artemii → RRSP<br><span style="font-size:11px;color:var(--muted)" id="in-a_rrsp-sub"></span></td><td style="text-align:right;white-space:nowrap">$<input type="number" id="in-a_rrsp" min="0" step="50" style="width:96px;text-align:right" oninput="onPlanInput()"></td></tr>
+      <tr><td>Kseniya → TFSA<br><span style="font-size:11px;color:var(--muted)" id="in-k_tfsa-sub"></span></td><td style="text-align:right;white-space:nowrap">$<input type="number" id="in-k_tfsa" min="0" step="50" style="width:96px;text-align:right" oninput="onPlanInput()"></td></tr>
+      <tr><td>Artemii → TFSA<br><span style="font-size:11px;color:var(--muted)" id="in-a_tfsa-sub"></span></td><td style="text-align:right;white-space:nowrap">$<input type="number" id="in-a_tfsa" min="0" step="50" style="width:96px;text-align:right" oninput="onPlanInput()"></td></tr>
+      <tr><td>Margo → RESP <span style="font-size:11px;color:var(--muted)">already running at RBC</span></td><td class="mono" style="text-align:right">$210</td></tr>
+      <tr style="background:var(--blue-bg)"><td><strong>Total set aside</strong></td><td class="mono" style="text-align:right"><strong id="pl-total">—</strong></td></tr>
+      <tr><td style="color:var(--muted)" id="pl-surplus-lbl">Left over</td><td class="mono" style="text-align:right" id="pl-breath">—</td></tr>
+    </tbody></table>
+    <div id="pl-warn" style="font-size:12px;margin-top:8px;line-height:1.6"></div>
+    <details style="margin-top:10px;font-size:13px">
+      <summary style="cursor:pointer;color:var(--muted)">Unused RRSP room (from CRA My Account)</summary>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px">
+        <label>Kseniya $<input type="number" id="in-k_room" step="100" style="width:100px" oninput="onPlanInput()"></label>
+        <label>Artemii $<input type="number" id="in-a_room" step="100" style="width:100px" oninput="onPlanInput()"></label>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px">New room each January: Kseniya ~$33,810, Artemii ~$29,700 (18% of $165K). If an amount would go over the room, the model moves the extra to that person's TFSA.</div>
+    </details>
+    <div style="display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap">
+      <button onclick="resetPlanDefaults()" class="scenario-btn">↺ Reset to defaults</button>
+      <span id="pl-sync" style="font-size:12px;color:var(--muted)"></span>
+    </div>
+    <div id="pl-actuals" style="font-size:12px;color:var(--muted);margin-top:8px"></div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:6px"><div style="width:30px;height:30px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">2</div><div><div class="card-title" style="margin-bottom:2px" id="pl-ref-title">Every spring — CRA refund</div><div style="font-size:13px;color:var(--muted)" id="pl-ref-sub"></div></div></div>
+    <table class="budget-table" style="margin-top:10px">
+      <thead><tr><th>Spring</th><th>Refund goes to</th><th>Result</th></tr></thead>
+      <tbody id="pl-ref-rows"></tbody>
+    </table>
+    <div style="font-size:12px;color:var(--muted);margin-top:8px">A refund this size is well under the mortgage's 20%-a-year prepayment privilege (resets Dec 15).</div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:6px"><div style="width:30px;height:30px;border-radius:50%;background:var(--warn);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">3</div><div><div class="card-title" style="margin-bottom:2px">Budget trimmed by ~$490/mo</div><div style="font-size:13px;color:var(--muted)">Already in 📊 This Month: Fashion $350, Gifts $300, Dining $220, Amazon $250, Entertainment $100, Misc $150, Nespresso $60.</div></div></div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:6px"><div style="width:30px;height:30px;border-radius:50%;background:var(--purple);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">4</div><div><div class="card-title" style="margin-bottom:2px">When money frees up — do more</div></div></div>
+    <div style="font-size:14px;line-height:1.8;margin-top:6px">
+      📈 <strong>Every raise:</strong> half of the extra take-home → Artemii's RRSP (while he has room), then TFSAs. Update step 1 above.<br>
+      🚗 <strong>Feb 2029 — Mazda lease ends:</strong> $959/mo freed → restart the TFSAs (paused for now).<br>
+      🎁 <strong>Kseniya's bonus:</strong> straight into her RRSP catch-up room.
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:6px"><div style="width:30px;height:30px;border-radius:50%;background:var(--muted);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">5</div><div><div class="card-title" style="margin-bottom:2px">Every month &amp; once a year</div></div></div>
+    <div style="font-size:14px;line-height:1.9;margin-top:6px">
+      ☐ <strong>Monthly:</strong> log what actually went into RRSP/TFSA (📝 Log tab → Investments)<br>
+      ☐ <strong>Feb:</strong> check RRSP + TFSA room on CRA My Account → update the room above<br>
+      ☐ <strong>Apr:</strong> file taxes → move the refund the same day it lands<br>
+      ☐ <strong>Jun 2028:</strong> start shopping the mortgage renewal (due Dec 2028)
+    </div>
+  </div>
+
+  <details class="card" style="cursor:pointer" ontoggle="if(this.open) drawRetChart()">
+    <summary style="font-weight:600;font-size:15px">📈 Details — chart, other retirement years, assumptions</summary>
+    <div style="cursor:default;margin-top:16px">
+      <div style="height:280px"><canvas id="retChart"></canvas></div>
+      <div style="margin:10px 0 18px;display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--muted)">
+        <span><span class="legend-dot" style="background:#2d5a3d"></span> The plan</span>
+        <span><span class="legend-dot" style="background:#94a3b8"></span> Same, but refunds spent</span>
+        <span><span class="legend-dot" style="background:#d4d0c8"></span> Stop contributing today</span>
+      </div>
+      <div class="section-label">If you retire earlier or later</div>
+      <table class="compare-table" id="pl-years"></table>
+      <div class="section-label">Where the money sits</div>
+      <table class="compare-table" id="pl-acc"></table>
+      <div style="font-size:12px;color:var(--muted);margin-top:14px;line-height:1.6" id="pl-assump"></div>
+    </div>
+  </details>
+
+</div>
+</div>
+
+<!-- ========== TAB: MORTGAGE ========== -->
+<style>
+  .mg-house-wrap { display:grid; grid-template-columns: minmax(0,1fr); gap:12px; }
+  .mg-svg { width:100%; height:auto; display:block; }
+  .mg-ghost { --h-shake:#e7eae7; --h-trim:#cfd5d0; --h-siding:#f1f3f1; --h-stone:#e2e5e2; --h-bracket:#eceeec; --h-door:#dde1de; --h-glass:#eef1ef; --h-steps:#e9ebe9; --h-roof:#d3d8d4; --h-col:#f1f3f1; --h-line:#d9ddda; --h-light:transparent; }
+  .mg-color { --h-shake:#3a3d42; --h-trim:#1d1f22; --h-siding:#f3f1ea; --h-stone:#4b4b4e; --h-bracket:#e7e0d1; --h-door:#3d434a; --h-glass:#a9bcc6; --h-steps:#bdbab3; --h-roof:#2a2c2f; --h-col:#f6f4ee; --h-line:#d8d4ca; --h-light:#ffd36b; }
+  .mg-seg { display:inline-flex; background:var(--bg); border:1px solid var(--border); border-radius:20px; padding:3px; gap:3px; flex-wrap:wrap; }
+  .mg-seg button { border:0; background:transparent; padding:7px 14px; border-radius:16px; font:500 13px 'DM Sans',sans-serif; color:var(--muted); cursor:pointer; }
+  .mg-seg button.on { background:var(--accent); color:#fff; }
+  .mg-stat { display:flex; flex-direction:column; gap:2px; }
+  .mg-stats { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+  @media (min-width:700px){ .mg-stats{ grid-template-columns:repeat(4,minmax(0,1fr)); } }
+  #mg-extra { width:100%; accent-color: var(--accent); }
+  .mg-level { transition: y .9s ease, height .9s ease; }
+  @media (prefers-reduced-motion: reduce){ .mg-level{ transition:none; } }
+</style>
+<div id="tab-mortgage" class="tab-content">
+<div class="main" style="max-width:760px">
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px">
+      <div class="card-title" style="margin:0">🏠 152 Harmony Circle</div>
+      <div style="font-size:12px;color:var(--muted)">Filled part = what's already yours</div>
+    </div>
+    <svg class="mg-svg" viewBox="0 0 500 400" role="img" aria-labelledby="mg-svg-title">
+      <title id="mg-svg-title">Drawing of the house, filled with color up to the share that is paid off</title>
+      <defs>
+        <symbol id="mg-house" viewBox="0 0 400 400">
+          <!-- third-storey loft (set back) -->
+          <rect x="92" y="78" width="150" height="44" style="fill:var(--h-siding)"/>
+          <g style="stroke:var(--h-line);stroke-width:1">
+            <line x1="92" y1="90" x2="242" y2="90"/><line x1="92" y1="101" x2="242" y2="101"/><line x1="92" y1="112" x2="242" y2="112"/>
+          </g>
+          <rect x="120" y="88" width="18" height="18" style="fill:var(--h-glass);stroke:var(--h-trim);stroke-width:3"/>
+          <rect x="160" y="88" width="18" height="18" style="fill:var(--h-glass);stroke:var(--h-trim);stroke-width:3"/>
+          <rect x="200" y="88" width="18" height="18" style="fill:var(--h-glass);stroke:var(--h-trim);stroke-width:3"/>
+          <rect x="84" y="70" width="166" height="9" style="fill:var(--h-trim)"/>
+          <!-- left hip roof over 2nd floor -->
+          <polygon points="22,132 40,118 230,118 230,132" style="fill:var(--h-roof)"/>
+          <rect x="22" y="130" width="210" height="6" style="fill:var(--h-trim)"/>
+          <!-- upper storey: shake -->
+          <rect x="34" y="136" width="332" height="98" style="fill:var(--h-shake)"/>
+          <g style="stroke:var(--h-trim);stroke-width:.8;opacity:.55">
+            <line x1="34" y1="152" x2="366" y2="152"/><line x1="34" y1="168" x2="366" y2="168"/><line x1="34" y1="184" x2="366" y2="184"/><line x1="34" y1="200" x2="366" y2="200"/><line x1="34" y1="216" x2="366" y2="216"/>
+          </g>
+          <!-- right gable -->
+          <polygon points="214,128 290,52 366,128" style="fill:var(--h-shake)"/>
+          <polyline points="204,134 290,46 376,134" style="fill:none;stroke:var(--h-trim);stroke-width:9;stroke-linejoin:miter"/>
+          <rect x="283" y="56" width="14" height="30" style="fill:var(--h-bracket)"/>
+          <rect x="238" y="98" width="13" height="30" style="fill:var(--h-bracket)"/>
+          <rect x="329" y="98" width="13" height="30" style="fill:var(--h-bracket)"/>
+          <!-- upper left window (3 panels, gridded sides) -->
+          <rect x="62" y="150" width="120" height="66" style="fill:var(--h-glass);stroke:var(--h-trim);stroke-width:5"/>
+          <g style="stroke:var(--h-trim);stroke-width:3">
+            <line x1="94" y1="150" x2="94" y2="216"/><line x1="150" y1="150" x2="150" y2="216"/>
+          </g>
+          <g style="stroke:var(--h-trim);stroke-width:1.2">
+            <line x1="62" y1="172" x2="94" y2="172"/><line x1="78" y1="150" x2="78" y2="172"/>
+            <line x1="150" y1="172" x2="182" y2="172"/><line x1="166" y1="150" x2="166" y2="172"/>
+            <line x1="94" y1="172" x2="150" y2="172"/><line x1="113" y1="150" x2="113" y2="172"/><line x1="131" y1="150" x2="131" y2="172"/>
+          </g>
+          <!-- upper right window in dark trim box -->
+          <rect x="252" y="138" width="78" height="92" style="fill:none;stroke:var(--h-trim);stroke-width:6"/>
+          <rect x="262" y="146" width="58" height="62" style="fill:var(--h-glass);stroke:var(--h-trim);stroke-width:4"/>
+          <line x1="291" y1="146" x2="291" y2="208" style="stroke:var(--h-trim);stroke-width:3"/>
+          <rect x="246" y="228" width="92" height="8" style="fill:var(--h-trim)"/>
+          <!-- belt band -->
+          <rect x="34" y="232" width="332" height="6" style="fill:var(--h-trim)"/>
+          <!-- main floor: lap siding -->
+          <rect x="34" y="238" width="332" height="82" style="fill:var(--h-siding)"/>
+          <g style="stroke:var(--h-line);stroke-width:1">
+            <line x1="34" y1="250" x2="366" y2="250"/><line x1="34" y1="262" x2="366" y2="262"/><line x1="34" y1="274" x2="366" y2="274"/><line x1="34" y1="286" x2="366" y2="286"/><line x1="34" y1="298" x2="366" y2="298"/><line x1="34" y1="310" x2="366" y2="310"/>
+          </g>
+          <!-- small left window -->
+          <rect x="44" y="252" width="22" height="52" style="fill:var(--h-glass);stroke:var(--h-trim);stroke-width:4"/>
+          <!-- big right window (6 panes) -->
+          <rect x="226" y="248" width="112" height="62" style="fill:var(--h-glass);stroke:var(--h-trim);stroke-width:5"/>
+          <g style="stroke:var(--h-trim);stroke-width:3">
+            <line x1="263" y1="248" x2="263" y2="310"/><line x1="301" y1="248" x2="301" y2="310"/><line x1="226" y1="270" x2="338" y2="270"/>
+          </g>
+          <!-- porch: roof, columns, door -->
+          <polygon points="66,226 196,226 202,238 60,238" style="fill:var(--h-roof)"/>
+          <rect x="80" y="238" width="12" height="82" style="fill:var(--h-col)"/>
+          <rect x="174" y="238" width="12" height="82" style="fill:var(--h-col)"/>
+          <rect x="114" y="248" width="36" height="72" style="fill:var(--h-door);stroke:var(--h-trim);stroke-width:3"/>
+          <rect x="122" y="255" width="20" height="10" style="fill:var(--h-glass)"/>
+          <rect x="94" y="262" width="16" height="9" style="fill:var(--h-trim)"/>
+          <!-- stone base -->
+          <rect x="34" y="320" width="332" height="34" style="fill:var(--h-stone)"/>
+          <g style="stroke:var(--h-trim);stroke-width:.8;opacity:.6">
+            <line x1="34" y1="331" x2="366" y2="331"/><line x1="34" y1="342" x2="366" y2="342"/>
+            <line x1="60" y1="320" x2="60" y2="331"/><line x1="110" y1="331" x2="110" y2="342"/><line x1="230" y1="320" x2="230" y2="331"/><line x1="290" y1="331" x2="290" y2="342"/><line x1="340" y1="320" x2="340" y2="331"/><line x1="260" y1="342" x2="260" y2="354"/>
+          </g>
+          <!-- steps + railings -->
+          <polygon points="88,320 178,320 186,330 80,330" style="fill:var(--h-steps)"/>
+          <polygon points="80,330 186,330 194,341 72,341" style="fill:var(--h-steps);opacity:.9"/>
+          <polygon points="72,341 194,341 202,354 64,354" style="fill:var(--h-steps);opacity:.8"/>
+          <g style="stroke:var(--h-trim);stroke-width:2.5;fill:none">
+            <polyline points="96,300 76,348"/><line x1="76" y1="320" x2="76" y2="348"/><line x1="96" y1="300" x2="96" y2="320"/>
+            <polyline points="168,300 188,348"/><line x1="188" y1="320" x2="188" y2="348"/><line x1="168" y1="300" x2="168" y2="320"/>
+          </g>
+          <!-- downspouts -->
+          <rect x="36" y="136" width="3" height="218" style="fill:var(--h-trim)"/>
+          <rect x="361" y="136" width="3" height="218" style="fill:var(--h-trim)"/>
+          <!-- pot lights along the eaves -->
+          <g style="fill:var(--h-light)">
+            <circle cx="60" cy="140" r="2.4"/><circle cx="100" cy="140" r="2.4"/><circle cx="140" cy="140" r="2.4"/><circle cx="180" cy="140" r="2.4"/>
+            <circle cx="236" cy="112" r="2.4"/><circle cx="262" cy="86" r="2.4"/><circle cx="318" cy="86" r="2.4"/><circle cx="344" cy="112" r="2.4"/>
+            <circle cx="100" cy="242" r="2.2"/><circle cx="133" cy="242" r="2.2"/><circle cx="166" cy="242" r="2.2"/>
+          </g>
+        </symbol>
+        <clipPath id="mg-clip"><rect id="mg-clip-rect" class="mg-level" x="0" y="354" width="400" height="0"/></clipPath>
+      </defs>
+      <!-- ground -->
+      <rect x="0" y="354" width="500" height="46" fill="#ece7dc"/>
+      <rect x="0" y="354" width="500" height="3" fill="#d9d2c3"/>
+      <!-- empty house -->
+      <use href="#mg-house" class="mg-ghost" x="0" y="0" width="400" height="400"/>
+      <!-- paid-off part in full color -->
+      <g clip-path="url(#mg-clip)">
+        <use href="#mg-house" class="mg-color" x="0" y="0" width="400" height="400"/>
+      </g>
+      <!-- fill level line + label -->
+      <line id="mg-level-line" class="mg-level" x1="20" x2="380" y1="354" y2="354" stroke="#2d5a3d" stroke-width="2" stroke-dasharray="5 4"/>
+      <!-- side ruler -->
+      <line x1="404" y1="46" x2="404" y2="354" stroke="#c9c4b8" stroke-width="2"/>
+      <g id="mg-ruler" font-family="DM Sans, sans-serif" font-size="14"></g>
+    </svg>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px">
+      <div><span id="mg-own" style="font-size:30px;font-weight:700;color:var(--accent)">—</span> <span style="color:var(--muted);font-size:13px">of the house is yours</span></div>
+      <div style="font-size:13px;color:var(--muted)" id="mg-mortgage-paid"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">What if…</div>
+    <div class="mg-seg" role="group" aria-label="Payment scenario">
+      <button id="mg-s-base" class="on" onclick="setMgScenario(false)">Today's pace</button>
+      <button id="mg-s-ref" onclick="setMgScenario(true)">+ spring refunds</button>
+    </div>
+    <div style="margin-top:16px">
+      <label for="mg-extra" style="display:flex;justify-content:space-between;font-size:14px"><span>Extra per month</span><strong class="mono" id="mg-extra-val">$0</strong></label>
+      <input type="range" id="mg-extra" min="0" max="866" step="50" value="0" oninput="renderMortgage()">
+      <div style="font-size:11px;color:var(--muted)">Your contract allows raising the payment by up to 20% ($866/mo) each year.</div>
+    </div>
+    <div class="mg-stats" style="margin-top:18px">
+      <div class="mg-stat"><span class="stat-label">Mortgage-free</span><span class="stat-value stat-green" id="mg-free" style="font-size:22px">—</span><span class="stat-sub" id="mg-free-sub"></span></div>
+      <div class="mg-stat"><span class="stat-label">Half the house yours</span><span class="stat-value" id="mg-half" style="font-size:22px">—</span><span class="stat-sub">50% of $883,757</span></div>
+      <div class="mg-stat"><span class="stat-label">At renewal (Dec 2028)</span><span class="stat-value" id="mg-renew" style="font-size:22px">—</span><span class="stat-sub">balance to refinance</span></div>
+      <div class="mg-stat"><span class="stat-label">Interest still to pay</span><span class="stat-value stat-warn" id="mg-int" style="font-size:22px">—</span><span class="stat-sub" id="mg-int-sub"></span></div>
+    </div>
+  </div>
+
+  <details class="card">
+    <summary style="cursor:pointer;font-weight:600">Update the balance &amp; assumptions</summary>
+    <div style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap;align-items:end">
+      <label style="font-size:13px">Balance from CMLS<br>$<input type="number" id="mg-bal" step="100" style="width:130px" onchange="onMgBalance()"></label>
+      <label style="font-size:13px">As of<br><input type="month" id="mg-asof" onchange="onMgBalance()" style="padding:6px;border:1px solid var(--border);border-radius:8px;font-family:inherit"></label>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.6">Bought 2023 for $883,757 · down payment $309,315 · mortgage at signing $574,442 · 5.56% fixed (compounded semi-annually) · $4,332/mo. Assumes the same rate after the Dec 2028 renewal. "+ spring refunds" uses the refunds from 🎯 The Plan: the first $45K builds the emergency fund, the rest goes to the mortgage each April. "Yours" is based on the purchase price, not today's market value.</div>
+  </details>
+
+</div>
+</div>
+<!-- ========== END MORTGAGE TAB ========== -->
+
+<!-- ========== TAB: SCENARIOS ========== -->
+<div id="tab-scenarios" class="tab-content">
+<div class="main">
+
+  <div class="grid-2" style="margin-bottom:16px">
+
+    <div class="card">
+      <div class="card-title">🚗 Mazda Lease — Exit via LeaseBuster?</div>
+      <p style="font-size:14px;line-height:1.6;color:var(--muted);margin-bottom:14px">
+        <strong>$479.25 × 2 payments/mo = $958.50/mo.</strong> LeaseBuster.ca lets someone take over your lease — you walk away at no penalty. Cash freed goes to RRSP.
+      </p>
+      <table class="compare-table">
+        <tr><th>Metric</th><th>Keep Lease</th><th>Exit (LeaseBuster)</th></tr>
+        <tr><td>Monthly car cost</td><td class="mono">$958</td><td class="mono">$0</td></tr>
+        <tr><td>→ RRSP extra/mo</td><td class="mono">—</td><td class="mono">+$958</td></tr>
+        <tr><td>RRSP tax refund/yr</td><td class="mono">—</td><td class="mono">~$4,830 (42%)</td></tr>
+        <tr><td>Buyout/exit penalty</td><td class="mono">—</td><td class="mono">$0 (transfer)</td></tr>
+        <tr class="highlight"><td>Portfolio at 2038</td><td class="mono" id="mazda-keep">~$1.72M</td><td class="mono" id="mazda-exit">~$1.99M</td></tr>
+        <tr><td>Gain from exit</td><td colspan="2" class="mono" id="mazda-gain">+~$270K by 2038</td></tr>
+      </table>
+      <div style="margin-top:12px;font-size:13px;color:var(--muted)">
+        💡 Exit now = ~$270K more at retirement. That's 3 full years of retirement living expenses.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⚡ Tesla Financing — Pay Off or Keep?</div>
+      <p style="font-size:14px;line-height:1.6;color:var(--muted);margin-bottom:14px">
+        Tesla financing <strong>$409.10/mo confirmed</strong>. The math depends on your interest rate — check the Tesla app or financing paperwork for the rate.
+      </p>
+      <table class="compare-table">
+        <tr><th>Metric</th><th>Keep Financing</th><th>Pay It Off</th></tr>
+        <tr><td>Monthly payment</td><td class="mono">$409</td><td class="mono">$0 (one-time)</td></tr>
+        <tr><td>WS Summit earns</td><td class="mono">~7%/yr</td><td class="mono">—</td></tr>
+        <tr><td>Tesla rate</td><td class="mono">4.5% confirmed</td><td class="mono">—</td></tr>
+        <tr><td>WS Summit vs Tesla spread</td><td class="mono">+2.5% investing wins</td><td class="mono">—</td></tr>
+        <tr class="highlight"><td>Recommendation</td><td colspan="2">✅ Keep financing — invest the $409 instead</td></tr>
+      </table>
+      <div class="banner banner-ok" style="margin-top:12px">
+        ✅ <strong>Keep the Tesla financing.</strong> At 4.5% rate vs ~7% WS Summit: investing beats paying off by 2.5%/yr. Just make the monthly payments and put any extra cash into RRSP/TFSA.
+      </div>
+    </div>
+
+  </div>
+
+  <div class="card">
+    <div class="card-title">🏠 Mortgage Prepayment — Should You Pay Extra?</div>
+    <div class="grid-2">
+      <div>
+        <div class="section-label">Your Mortgage Facts</div>
+        <div class="budget-row"><span class="budget-cat">Balance</span><span class="budget-budget mono">$533,446</span></div>
+        <div class="budget-row"><span class="budget-cat">Fixed rate</span><span class="budget-budget mono">5.56%</span></div>
+        <div class="budget-row"><span class="budget-cat">Monthly payment</span><span class="budget-budget mono">$4,332</span></div>
+        <div class="budget-row"><span class="budget-cat">Renewal</span><span class="budget-budget mono">Dec 15, 2028</span></div>
+        <div class="budget-row"><span class="budget-cat">Full payoff</span><span class="budget-budget mono">~Dec 2041</span></div>
+        <div class="budget-row"><span class="budget-cat">Max prepay/yr</span><span class="budget-budget mono">$114,888</span></div>
+      </div>
+      <div>
+        <div class="section-label">Invest vs Prepay Math</div>
+        <div class="budget-row"><span class="budget-cat">WS Summit return</span><span class="budget-budget mono" style="color:var(--accent)">~7.0%</span></div>
+        <div class="budget-row"><span class="budget-cat">Mortgage cost (after-tax)</span><span class="budget-budget mono">5.56%</span></div>
+        <div class="budget-row"><span class="budget-cat">Spread (invest wins by)</span><span class="budget-budget mono" style="color:var(--accent)">+1.44%</span></div>
+        <div class="budget-row"><span class="budget-cat">$114K prepaid saves</span><span class="budget-budget mono">$6,338/yr interest</span></div>
+        <div class="budget-row"><span class="budget-cat">$114K invested earns</span><span class="budget-budget mono">$7,980/yr (7%)</span></div>
+        <div class="budget-row" style="font-weight:700"><span class="budget-cat">Net advantage</span><span class="budget-budget" style="color:var(--accent);font-weight:700">INVEST +$1,642/yr</span></div>
+      </div>
+    </div>
+    <div class="banner banner-ok" style="margin-top:14px">
+      ✅ <strong>Don't prepay aggressively.</strong> Invest surplus in RRSP/TFSA instead. At renewal (Dec 2028), reassess — if new rate exceeds 6.5%, consider a lump-sum payment. <br><strong>Your plan:</strong> the monthly budget goes to RRSP/TFSA, and only the spring refunds go to the mortgage (after the emergency fund is full) — paid off Apr 2036.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">💰 RRSP Optimization — Biggest Lever You Have</div>
+    <div class="grid-2">
+      <div>
+        <div class="section-label">Kseniya — $233K salary (42% marginal)</div>
+        <div class="budget-row"><span class="budget-cat">RRSP room (est.)</span><span class="budget-budget mono">$33,810/yr + $74,654 catch-up · plan $36K/yr</span></div>
+        <div class="budget-row"><span class="budget-cat">Tax refund per $1K</span><span class="budget-budget mono">$420 back</span></div>
+        <div class="budget-row"><span class="budget-cat">Refund at normal max</span><span class="budget-budget mono">~$15,100 (on $36K)</span></div>
+        <div class="budget-row"><span class="budget-cat">Current RRSP</span><span class="budget-budget mono">$275,503</span></div>
+        <div class="budget-row"><span class="budget-cat">Current TFSA</span><span class="budget-budget mono">$101,591</span></div>
+      </div>
+      <div>
+        <div class="section-label">Artemii — $165K salary (38% marginal)</div>
+        <div class="budget-row"><span class="budget-cat">RRSP room (est.)</span><span class="budget-budget mono">~$29,700/yr + ~$52K catch-up (confirm)</span></div>
+        <div class="budget-row"><span class="budget-cat">Tax refund per $1K</span><span class="budget-budget mono">~$370 back</span></div>
+        <div class="budget-row"><span class="budget-cat">Refund (plan $3,000/mo)</span><span class="budget-budget mono">~$13,200/yr</span></div>
+        <div class="budget-row"><span class="budget-cat">Current RRSP</span><span class="budget-budget mono">$141,000</span></div>
+        <div class="budget-row"><span class="budget-cat">Current TFSA</span><span class="budget-budget mono">$44,000</span></div>
+      </div>
+    </div>
+    <div class="banner banner-purple" style="margin-top:14px">
+      🧩 <strong>Priority order:</strong> ① Max both RRSPs — 42% / ~37% instant return. ② TFSA next for tax-free growth + flexibility. ③ Any remainder to WS non-registered. Default plan: $72,000/yr into RRSPs = ~$28,300 back each spring (live numbers in 🎯 The Plan).
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📊 Four Scenarios: Portfolio Value at 2038</div>
+    <div style="height:280px"><canvas id="scenarioChart"></canvas></div>
+    <div style="margin-top:14px;font-size:13px;color:var(--muted);line-height:1.6">
+      All scenarios start at $562K. Return assumption 7%/yr (WS Summit managed portfolios).
+    </div>
+  </div>
+
+  <!-- CAR RECOMMENDATION -->
+  <div class="card">
+    <div class="card-title">🚗 Car Strategy — If You Exit the Mazda</div>
+    <div class="banner banner-warn" style="margin-bottom:14px">
+      ⚠️ If LeaseBuster works but requires a cash incentive to the buyer, budget $2K–$5K as a sweetener — still worth it vs 28 more months of $958/mo = $26,824.
+    </div>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:14px">You still need a 2nd car. Here are the options ranked by financial impact:</p>
+    <table class="compare-table">
+      <tr><th>Option</th><th>Monthly Cost</th><th>Upfront</th><th>Verdict</th></tr>
+      <tr class="highlight"><td>⭐ Used EV (Nissan Leaf / Chevy Bolt / used Tesla 3)</td><td class="mono">~$0–$300</td><td class="mono">$15–25K cash or finance</td><td>Best long-term — gas savings + low maint</td></tr>
+      <tr><td>Used reliable ICE (Civic, Corolla, RAV4)</td><td class="mono">~$200–$350</td><td class="mono">$20–28K</td><td>Solid backup — $600/mo cheaper than Mazda lease</td></tr>
+      <tr><td>New budget car (Hyundai Elantra, Kia Forte)</td><td class="mono">~$400–$500</td><td class="mono">$0 down possible</td><td>Fine but you're back near Mazda cost</td></tr>
+      <tr><td>New lease (any car)</td><td class="mono">~$600–$900</td><td class="mono">Low upfront</td><td>❌ Avoid — same problem, different car</td></tr>
+    </table>
+    <div style="background:var(--accent);color:white;border-radius:8px;padding:14px;margin-top:12px">
+      <div style="font-weight:600;margin-bottom:6px">💡 Top recommendation: Used Chevy Bolt or Nissan Leaf</div>
+      <div style="font-size:13px;opacity:.9">2021–2023 Bolt EV: $18–24K in Alberta. No gas (~$120/mo savings). Low maintenance. You already have home charging with the Tesla. Finance at 6.5% = ~$350/mo on $20K — saves you $600/mo vs Mazda lease. Over 28 remaining lease months = $16,800 in your pocket. Put that straight into RRSP.</div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ========== TAB: ACTIONS ========== -->
+<div id="tab-actions" class="tab-content">
+<div class="main">
+
+  <div class="banner banner-ok">
+    💪 <strong>Strong position.</strong> $562K invested, $398K combined income, ~$21,889/mo net in November. Plan: retire at 65 (Artemii 2048, Kseniya 2052) — the $12K/mo goal is covered from ~2046.
+  </div>
+
+  <div class="section-label">🔴 This Month — October 2026</div>
+  <div class="card">
+    <div class="action-item">
+      <div class="action-num warn">1</div>
+      <div>
+        <div class="action-title">Watch October cash flow — buffer is ~$2,140</div>
+        <div class="action-desc">$12,439 Kseniya income minus ~$11,312 spend = ~$1,127 surplus this month (Artemii starts November). Chequing has $15,963 as buffer. Don't dip into investments.</div>
+      </div>
+    </div>
+    <div class="action-item">
+      <div class="action-num warn">2</div>
+      <div>
+        <div class="action-title">✅ Tesla rate confirmed at 4.5% — keep financing</div>
+        <div class="action-desc">At 4.5% vs WS Summit's 7%, the 2.5% spread favors keeping the loan and investing the difference. $409/mo payment, do not pay off early. Put extra cash into RRSP instead.</div>
+      </div>
+    </div>
+    <div class="action-item">
+      <div class="action-num warn">3</div>
+      <div>
+        <div class="action-title">Start Artemii's RRSP contribution plan for November</div>
+        <div class="action-desc">Set up $3,000/mo ($2,475 normal + $525 catch-up) from Day 1 of new job — first check his unused room on CRA. ~$13,200 refund/yr. See 🎯 The Plan tab.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">🟡 November — Two Incomes Return</div>
+  <div class="card">
+    <div class="action-item">
+      <div class="action-num">4</div>
+      <div>
+        <div class="action-title">Set up auto-invest: RRSP $3,000 each, TFSA $693 Kseniya + $583 Artemii = $7,276/mo</div>
+        <div class="action-desc">$72,000/yr into RRSPs → ~$28,300 refund each spring. Refunds go to the $45K emergency fund first (full April 2029), then to the mortgage. See 🎯 The Plan tab.</div>
+      </div>
+    </div>
+    <div class="action-item">
+      <div class="action-num">5</div>
+      <div>
+        <div class="action-title">Investigate Mazda lease exit via LeaseBuster.ca</div>
+        <div class="action-desc">List your Mazda on leasebuster.ca (free). Someone takes over your lease. You're out with zero penalty, saving $958/mo → redirected to RRSP. Frees $958/mo of breathing room.</div>
+      </div>
+    </div>
+    <div class="action-item">
+      <div class="action-num">6</div>
+      <div>
+        <div class="action-title">Max TFSA contributions for both ($14,000 combined, 2026 limit)</div>
+        <div class="action-desc">Check remaining TFSA room on CRA My Account (MyAccount → TFSA → room available). TFSA growth is completely tax-free forever — second priority after RRSP. Put it in WS Summit for managed growth.</div>
+      </div>
+    </div>
+    <div class="action-item">
+      <div class="action-num">7</div>
+      <div>
+        <div class="action-title">Contribute $2,500/yr to Margo's RESP (collect $500 CESG grant)</div>
+        <div class="action-desc">Government matches 20% on first $2,500 = $500 free per year. Lifetime max $7,200/child. Already open at RBC at $210/mo — just confirm it's running.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">🟢 Ongoing Monthly Habits</div>
+  <div class="card">
+    <div class="action-item">
+      <div class="action-num blue">8</div>
+      <div>
+        <div class="action-title">Weekly: 5 min in "This Month" tab entering actuals</div>
+        <div class="action-desc">Every Sunday, scan your WS + RBC + PC statements and enter last week's variable spending. The bar charts show instantly if you're on track. Share this link with Artemii — works on any device.</div>
+      </div>
+    </div>
+    <div class="action-item">
+      <div class="action-num blue">9</div>
+      <div>
+        <div class="action-title">Amazon 48-hour rule + Fashion $300 soft cap</div>
+        <div class="action-desc">Amazon averaged $600/mo. Even cutting to $400 saves $2,400/yr → into RRSP → ~$1,000 extra refund. Fashion averaged $400-553/mo — a $300 mental cap saves ~$1,200/yr extra. Small habit, big compound effect.</div>
+      </div>
+    </div>
+    <div class="action-item">
+      <div class="action-num blue">10</div>
+      <div>
+        <div class="action-title">Mortgage renewal Dec 2028 — shop rates starting June 2028</div>
+        <div class="action-desc">Balance at renewal ~$414K. Lock in a rate 6 months ahead. If new rate drops to 4-4.5%, consider accelerating principal. If rates stay high (>5.5%), keep investing strategy. Revisit prepayment math then.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">📊 Financial Snapshot — October 2026</div>
+  <div class="card">
+    <table class="compare-table">
+      <tr><th>Account</th><th>Balance</th><th>Notes</th></tr>
+      <tr><td>Kseniya RRSP (WS Summit)</td><td class="mono">$275,503</td><td>+41% all-time, managed portfolio</td></tr>
+      <tr><td>Kseniya TFSA (WS)</td><td class="mono">$101,591</td><td>Summit $83.6K + TFSA $17.9K</td></tr>
+      <tr><td>Artemii RRSP (WS)</td><td class="mono">$141,000</td><td>Wealthsimple</td></tr>
+      <tr><td>Artemii TFSA (WS)</td><td class="mono">$44,000</td><td>Wealthsimple</td></tr>
+      <tr class="highlight"><td>Total Investments</td><td class="mono">$562,094</td><td>78% of CoastFIRE number at $2.8M target</td></tr>
+      <tr><td>Chequing (Kseniya)</td><td class="mono">$17,264</td><td>+ Vacation $1,301</td></tr>
+      <tr><td>Mortgage</td><td class="mono">($533,446)</td><td>5.56% fixed, Dec 2028 renewal</td></tr>
+      <tr><td>WS CC balance</td><td class="mono">~$0</td><td>Paid in full ✓</td></tr>
+      <tr><td>RESP (Margo)</td><td class="mono">TBD</td><td>Please provide details to update</td></tr>
+    </table>
+  </div>
+
+</div>
+</div>
+
+
+
+<!-- ========== TAB: DEBT ATTACK ========== -->
+<div id="tab-debt" class="tab-content">
+<div class="main">
+
+  <div class="banner banner-warn">
+    🔥 <strong>Ramsey Mode — optional extras.</strong> Your main plan already kills the mortgage in <strong>Apr 2036</strong> using spring refunds (see 🎯 The Plan). The ideas below would go even faster, but take money from investing.
+  </div>
+
+  <!-- DEBT SNAPSHOT -->
+  <div class="card">
+    <div class="card-title">📋 Your Debts — Full Picture</div>
+    <table style="width:100%;border-collapse:collapse;font-size:14px">
+      <thead>
+        <tr style="border-bottom:2px solid var(--border);text-align:left">
+          <th style="padding:8px 4px;color:var(--muted);font-weight:500">Debt</th>
+          <th style="padding:8px 4px;color:var(--muted);font-weight:500;text-align:right">Balance</th>
+          <th style="padding:8px 4px;color:var(--muted);font-weight:500;text-align:right">Rate</th>
+          <th style="padding:8px 4px;color:var(--muted);font-weight:500;text-align:right">Monthly</th>
+          <th style="padding:8px 4px;color:var(--muted);font-weight:500;text-align:right">Payoff</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px 4px"><strong>Tesla Financing</strong><br><span style="font-size:11px;color:var(--muted)">WS financing, confirmed $409/mo</span></td>
+          <td style="padding:10px 4px;text-align:right;font-family:'DM Mono',monospace">~$18K</td>
+          <td style="padding:10px 4px;text-align:right;font-family:'DM Mono',monospace">4.5%</td>
+          <td style="padding:10px 4px;text-align:right;font-family:'DM Mono',monospace">$409</td>
+          <td style="padding:10px 4px;text-align:right"><span style="background:var(--warn-bg);color:var(--warn);padding:2px 8px;border-radius:20px;font-size:12px">~2029</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px 4px"><strong>Mortgage</strong><br><span style="font-size:11px;color:var(--muted)">152 Harmony Circle, CMLS, 5.56%</span></td>
+          <td style="padding:10px 4px;text-align:right;font-family:'DM Mono',monospace">~$553K</td>
+          <td style="padding:10px 4px;text-align:right;font-family:'DM Mono',monospace">5.56%</td>
+          <td style="padding:10px 4px;text-align:right;font-family:'DM Mono',monospace">$4,332</td>
+          <td style="padding:10px 4px;text-align:right"><span style="background:#fce8e8;color:#b23a48;padding:2px 8px;border-radius:20px;font-size:12px">Dec 2041</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px 4px"><strong>Mazda Lease</strong><br><span style="font-size:11px;color:var(--muted)">If you keep it — not debt but locked cash</span></td>
+          <td style="padding:10px 4px;text-align:right;font-family:'DM Mono',monospace">28 mo left</td>
+          <td style="padding:10px 4px;text-align:right;font-family:'DM Mono',monospace">—</td>
+          <td style="padding:10px 4px;text-align:right;font-family:'DM Mono',monospace">$959</td>
+          <td style="padding:10px 4px;text-align:right"><span style="background:var(--blue-bg);color:var(--blue);padding:2px 8px;border-radius:20px;font-size:12px">~2028</span></td>
+        </tr>
+        <tr>
+          <td style="padding:10px 4px"><strong>Life Insurance</strong><br><span style="font-size:11px;color:var(--muted)">Equitable + BMO + Foresters — worth reviewing</span></td>
+          <td style="padding:10px 4px;text-align:right;font-family:'DM Mono',monospace">ongoing</td>
+          <td style="padding:10px 4px;text-align:right;font-family:'DM Mono',monospace">—</td>
+          <td style="padding:10px 4px;text-align:right;font-family:'DM Mono',monospace">$595</td>
+          <td style="padding:10px 4px;text-align:right"><span style="background:#f3eefb;color:#6b3fa0;padding:2px 8px;border-radius:20px;font-size:12px">review</span></td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr style="border-top:2px solid var(--border)">
+          <td style="padding:10px 4px;font-weight:600">Total monthly debt load</td>
+          <td colspan="3"></td>
+          <td style="padding:10px 4px;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:var(--danger)">$6,295/mo</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- SNOWBALL PLAN -->
+  <div class="card">
+    <div class="card-title">❄️→🔥 The Snowball Plan</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Pay minimums on everything. Attack smallest debt first. When it's dead, roll that payment into the next. Here's your sequence:</p>
+
+    <div style="display:flex;flex-direction:column;gap:12px">
+
+      <!-- Step 1 -->
+      <div style="border-left:4px solid var(--warn);padding:12px 16px;background:var(--warn-bg);border-radius:0 8px 8px 0">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-weight:700;font-size:15px">① Tesla Loan — Kill it first</span>
+          <span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--warn)">~$18K</span>
+        </div>
+        <p style="font-size:13px;color:var(--text);margin-bottom:6px">Currently $409/mo. You have ~$2,200/mo breathing room after the plan. Throw an extra <strong>$1,500/mo</strong> at it on top of $409 = ~$1,909/mo total. Paid off in <strong>~10 months (Aug 2027)</strong>.</p>
+        <p style="font-size:12px;color:var(--muted)">⚡ But wait — at 4.5% rate, your WS Summit earns 7%. Mathematically, investing wins. The Ramsey counterargument: the <em>psychological</em> win of eliminating a payment frees mental bandwidth. Your call — see the math below.</p>
+      </div>
+
+      <!-- Step 2 -->
+      <div style="border-left:4px solid #6b3fa0;padding:12px 16px;background:#f3eefb;border-radius:0 8px 8px 0">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-weight:700;font-size:15px">② Exit the Mazda Lease</span>
+          <span style="font-family:'DM Mono',monospace;font-weight:700;color:#6b3fa0">$959/mo freed</span>
+        </div>
+        <p style="font-size:13px;color:var(--text);margin-bottom:6px">List on LeaseBuster.ca — someone takes over, you walk away free. Replace with a used Bolt EV (~$350/mo finance) = <strong>$609/mo freed</strong>. After Tesla is done (Aug 2027), snowball that $409 into mortgage prepayments too.</p>
+        <p style="font-size:12px;color:var(--muted)">Combined: $959 lease freed + $409 Tesla freed = <strong>$1,368/mo available for mortgage attack</strong> from mid-2027.</p>
+      </div>
+
+      <!-- Step 3 -->
+      <div style="border-left:4px solid var(--danger);padding:12px 16px;background:var(--danger-bg);border-radius:0 8px 8px 0">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-weight:700;font-size:15px">③ Mortgage — Accelerate to 2037</span>
+          <span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--danger)">4 years early</span>
+        </div>
+        <p style="font-size:13px;color:var(--text);margin-bottom:6px">Renewal Dec 2028. At renewal, make a lump-sum prepayment (typically 15–20% of balance allowed per year = ~$83–110K). Then increase monthly payments to $6,000+/mo. Mortgage could be gone by <strong>2037</strong> — 4 years early, saving ~$80K in interest.</p>
+        <p style="font-size:12px;color:var(--muted)">🔑 Key move: set payments to accelerated bi-weekly at renewal. Each extra payment goes straight to principal.</p>
+      </div>
+
+      <!-- Step 4 -->
+      <div style="border-left:4px solid var(--accent);padding:12px 16px;background:#f0f7f2;border-radius:0 8px 8px 0">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-weight:700;font-size:15px">④ Debt-free 2037 → Invest everything</span>
+          <span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--accent)">6 yrs to retire</span>
+        </div>
+        <p style="font-size:13px;color:var(--text)">With zero debt from 2037, your full $22K/mo net income becomes investable. At 7%, 6 years of $10K+/mo investing adds <strong>~$900K</strong> to the portfolio. Retire 2043 with mortgage-free home + $5M+ portfolio.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MATH: RAMSEY VS INVEST -->
+  <div class="card">
+    <div class="card-title">🧮 Ramsey vs. Investor — The Honest Math</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:12px">On the Tesla loan specifically (4.5% rate):</p>
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead>
+        <tr style="border-bottom:2px solid var(--border)">
+          <th style="padding:8px 4px;text-align:left;color:var(--muted);font-weight:500"></th>
+          <th style="padding:8px 4px;text-align:right;color:var(--warn);font-weight:600">Ramsey: Pay it off</th>
+          <th style="padding:8px 4px;text-align:right;color:var(--accent);font-weight:600">Investor: Keep & invest</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:8px 4px">Extra $1,500/mo goes to…</td>
+          <td style="padding:8px 4px;text-align:right;font-family:'DM Mono',monospace">Tesla payoff</td>
+          <td style="padding:8px 4px;text-align:right;font-family:'DM Mono',monospace">RRSP (42% refund!)</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:8px 4px">Interest saved</td>
+          <td style="padding:8px 4px;text-align:right;font-family:'DM Mono',monospace">~$1,800</td>
+          <td style="padding:8px 4px;text-align:right;font-family:'DM Mono',monospace">—</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:8px 4px">Tax refund from RRSP</td>
+          <td style="padding:8px 4px;text-align:right;font-family:'DM Mono',monospace">—</td>
+          <td style="padding:8px 4px;text-align:right;font-family:'DM Mono',monospace">~$7,560/yr</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:8px 4px">Portfolio growth (10 mo @ 7%)</td>
+          <td style="padding:8px 4px;text-align:right;font-family:'DM Mono',monospace">—</td>
+          <td style="padding:8px 4px;text-align:right;font-family:'DM Mono',monospace">~$15,700</td>
+        </tr>
+        <tr style="background:#f0f7f2">
+          <td style="padding:8px 4px;font-weight:600">Verdict</td>
+          <td style="padding:8px 4px;text-align:right">Peace of mind ✅</td>
+          <td style="padding:8px 4px;text-align:right;font-weight:700;color:var(--accent)">+$21K richer ✅</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:12px;color:var(--muted);margin-top:12px">💡 <strong>Our take:</strong> Keep Tesla financing ($409/mo), invest the extra into RRSP. But if having the loan keeps you up at night — kill it. Behaviour beats math every time.</p>
+  </div>
+
+  <!-- INSURANCE REVIEW -->
+  <div class="card">
+    <div class="card-title">🛡️ Insurance Audit — $595/mo Worth Reviewing</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:12px">You're paying $595/mo in life/disability premiums. That's $7,140/yr. Worth a 1-hour review with an independent broker:</p>
+    <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;background:var(--bg);border-radius:8px">
+        <span>Equitable Life — $107/mo</span>
+        <span style="color:var(--muted)">Confirm coverage amount & beneficiary</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;background:var(--bg);border-radius:8px">
+        <span>BMO Insurance — $175/mo</span>
+        <span style="color:var(--muted)">Is this term or whole life?</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;background:var(--bg);border-radius:8px">
+        <span>Foresters (IOF) — $313/mo</span>
+        <span style="color:var(--muted)">Largest one — confirm if still needed</span>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-top:12px">⚠️ As your portfolio grows, your <em>need</em> for life insurance decreases. By the time you hit $2M invested, your portfolio itself is the safety net. Consider whether these policies can be reduced or cancelled — saving $200–400/mo that redirects straight to retirement.</p>
+  </div>
+
+  <!-- DEBT-FREE TIMELINE -->
+  <div class="card">
+    <div class="card-title">📅 Debt-Free Timeline — Aggressive Mode</div>
+    <div style="display:flex;flex-direction:column;gap:0">
+      <div style="display:flex;gap:16px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border)">
+        <div style="min-width:60px;font-family:'DM Mono',monospace;font-weight:700;color:var(--accent);font-size:15px">Now</div>
+        <div><strong>Exit Mazda via LeaseBuster</strong> — list today, free ~$959/mo within 60 days. Replace with Bolt EV at ~$350/mo.</div>
+      </div>
+      <div style="display:flex;gap:16px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border)">
+        <div style="min-width:60px;font-family:'DM Mono',monospace;font-weight:700;color:var(--accent);font-size:15px">2027</div>
+        <div><strong>Tesla paid off</strong> (if you choose Ramsey on this one). $409/mo freed → snowball into mortgage prepayment. Or keep and invest — both valid.</div>
+      </div>
+      <div style="display:flex;gap:16px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border)">
+        <div style="min-width:60px;font-family:'DM Mono',monospace;font-weight:700;color:var(--accent);font-size:15px">2028</div>
+        <div><strong>Mortgage renewal.</strong> Make maximum lump-sum prepayment (~$83–110K). Switch to accelerated bi-weekly + increase payments. Aim for $6,000/mo to principal.</div>
+      </div>
+      <div style="display:flex;gap:16px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border)">
+        <div style="min-width:60px;font-family:'DM Mono',monospace;font-weight:700;color:var(--accent);font-size:15px">2037</div>
+        <div><strong>🏠 Mortgage gone — 4 years early.</strong> Save ~$80K interest. Now your entire income is investable.</div>
+      </div>
+      <div style="display:flex;gap:16px;align-items:flex-start;padding:12px 0">
+        <div style="min-width:60px;font-family:'DM Mono',monospace;font-weight:700;color:var(--accent);font-size:15px">2043</div>
+        <div><strong>🎉 Retire debt-free with $5M+ portfolio.</strong> $14,500+/mo income (before tax, future dollars). Mortgage-free home. CPP + OAS bonus at 65.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHAT TO DO THIS MONTH -->
+  <div class="card" style="border:2px solid var(--accent)">
+    <div class="card-title">✅ Do This Month — Debt Attack Edition</div>
+    <div style="display:flex;flex-direction:column;gap:10px;font-size:13px">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <span style="font-size:18px">1️⃣</span>
+        <div><strong>Book an insurance review</strong> with an independent broker. Bring all 3 policies. Ask: "What's the minimum coverage I need given our $562K portfolio?" Potential savings: $200–400/mo.</div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <span style="font-size:18px">2️⃣</span>
+        <div><strong>List the Mazda on LeaseBuster.ca</strong> (free, takes 10 min). This is the single biggest monthly cash unlock: $959 → freed. Replaces with Bolt EV at ~$350/mo.</div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <span style="font-size:18px">3️⃣</span>
+        <div><strong>Confirm home insurance.</strong> Call Allstate — is home coverage bundled in your existing policy? If not, add it (~$100–150/mo for a home in Harmony).</div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <span style="font-size:18px">4️⃣</span>
+        <div><strong>Decide: Tesla payoff or RRSP?</strong> If the loan bothers you, add $1,500/mo to kill it by Aug 2027. If not, put $1,500 into RRSP — you'll come out $22K ahead mathematically but it's your peace of mind.</div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <span style="font-size:18px">5️⃣</span>
+        <div><strong>Set a Dec 2028 mortgage calendar reminder</strong> to prepare lump-sum prepayment. Start building that cash now — it's 2 years away but early prep wins.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+<!-- ===== END DEBT ATTACK TAB ===== -->
+
+<script>
+// ============ DATA ============
+const PORTFOLIO = 562094;
+const INCOME_BOTH_NET = 21889;  // Kseniya $12,439 + Artemii ~$9,450 net ($165K AB salary)
+const INCOME_K_NET = 12439;     // Kseniya actual net pay
+
+const fixedCats = [
+  { name:'Mortgage', sub:'152 Harmony Circle, 5.56%', budget:4332 },
+  { name:'Mazda Lease (×2/mo)', sub:'$479.25 × 2 — toggle above', budget:959, tag:'mazda' },
+  { name:'Tesla Financing', sub:'$409.10/mo confirmed', budget:409, tag:'tesla' },
+  { name:'ENMAX Electricity', sub:'yearly avg incl. winter · summer avg was $334', budget:420 },
+  { name:'Water (EPCOR) — rate increase', sub:'NEW · bill ~2× from Oct 2026 · est., update after first bill', budget:120 },
+  { name:'Property tax (Rocky View County)', sub:'~$4,500/yr · not in mortgage payment', budget:375 },
+    { name:'Allstate Insurance (cars + home)', sub:'$291.91 + $204.53 · home insurance bundled', budget:496 },
+  { name:'Life Ins — Equitable Life', sub:'monthly pre-auth from RBC chequing', budget:107 },
+  { name:'Life Ins — BMO Insurance', sub:'monthly pre-auth from RBC chequing', budget:175 },
+  { name:'Life Ins — Foresters (IOF)', sub:'monthly pre-auth from RBC chequing', budget:313 },
+  { name:'Rogers (phone/TV/internet)', sub:'pre-auth monthly', budget:254 },
+  { name:'Telus (2nd line)', sub:'pre-auth', budget:77 },
+  { name:'HOA / EPCOR', sub:'Harmony community fees', budget:220 },
+  { name:'Waste Collection', sub:'Rocky View County, ~$39/mo', budget:39 },
+  { name:'Taekwondo — Margo', sub:'Master Rims, ~$175 × 2/mo', budget:350 },
+  { name:'Subscriptions', sub:'Apple One, DAZN, Samsung, Wikimedia, Anthropic', budget:153 },
+  { name:'Pest Control (Insight)', sub:'seasonal', budget:160 },
+];
+
+const varCats = [
+  { name:'Groceries', sub:'PC Express, Costco, FreshCo, T&T · avg from statements', budget:1000 },
+  { name:'Amazon / Online Shopping', sub:'trimmed from $300 to fund RRSP catch-up', budget:250 },
+  { name:'Dining Out & Coffee', sub:'restaurants, Starbucks, takeout · trimmed from $280', budget:220 },
+  { name:'Fashion & Beauty', sub:'clothing, Sephora, Pandora, Nike · trimmed from $500', budget:350 },
+  { name:'Health & Pharmacy', sub:'CURISRX, Shoppers, iHerb, supplements', budget:200 },
+  { name:'Nespresso', sub:'~1 order/mo · trimmed from $90', budget:60 },
+  { name:'Cannabis', sub:'Value Buds, In N Out Cannabis · target <$50', budget:50 },
+  { name:'Pets (food + insurance)', sub:'dog + cat food, FETCH insurance, vet', budget:250 },
+  { name:'Ukraine (Portmone + Sternenko)', sub:'avg $130/mo from statements', budget:130 },
+  { name:'Alcohol', sub:'liquor stores avg', budget:30 },
+  { name:'Entertainment & Activities', sub:'Calaway, cinema, events · trimmed from $150', budget:100 },
+  { name:'Home & Kids (IKEA/HomeSense)', sub:'household goods, kids items', budget:97 },
+  { name:"Artemii's WS card", sub:'dining, groceries, shopping · Jun–Sep avg ~$1,770 (excl. gas & one-offs) · target $1,200', budget:1200 },
+  { name:'Kids clothing & activities', sub:'NEW · clothes, school trips, camps, extras', budget:150 },
+  { name:'Misc / Other', sub:'everything else · trimmed from $200', budget:150 },
+];
+
+const otherCats = [
+  { name:'Gas / Petro-Canada', sub:'~$120/mo avg', budget:120 },
+  { name:"Gas — Artemii's car", sub:'from his WS card · ~$500/mo Jun–Sep', budget:450 },
+  { name:'School (RVS, supplies)', sub:'~$750/yr ÷ 12', budget:63 },
+  { name:'Margo Allowance', sub:'$200/mo', budget:200 },
+  { name:'Cleaners (Uliana)', sub:'Uliana Botiuk, monthly', budget:300 },
+  { name:'Gifts (family + personal)', sub:'$3,600/yr ÷ 12 · trimmed from $400', budget:300 },
+  { name:'Car maintenance & tires', sub:'NEW sinking fund · service, tires (~$1,500/set), wipers', budget:150 },
+  { name:'Vehicle registration', sub:'2 cars × $100/yr', budget:17 },
+  { name:'Home repairs & improvements', sub:'NEW sinking fund · appliances, fixes, projects', budget:400 },
+  { name:'Travel fund', sub:'NEW sinking fund · trips, flights, hotels', budget:300 },
+  { name:'Tech & household replacement', sub:'NEW · phones, laptops, small appliances', budget:50 },
+  { name:'Yard & snow', sub:'NEW · lawn, garden, snow removal', budget:40 },
+  { name:'Memberships & admin', sub:'NEW · Costco, tax prep, passports, renewals', budget:40 },
+];
+
+let carState = { mazda: true, tesla: true };
+let actuals = {};
+// Preprod = the copy served from /preprod/ — test mode: own local storage, no writes to the Google Sheet
+const IS_PREPROD = /\/preprod(\/|$)/.test(location.pathname);
+const LS_PREFIX = IS_PREPROD ? 'pre_' : '';
+const LS_KEY = LS_PREFIX + 'vartazarov_v4';
+
+function saveLS() { try { localStorage.setItem(LS_KEY, JSON.stringify(actuals)); } catch(e){} }
+function loadLS() { try { const d = localStorage.getItem(LS_KEY); if(d) actuals = JSON.parse(d); } catch(e){} }
+loadLS();
+
+// ============ TABS ============
+function showTab(id, el) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  el.classList.add('active');
+  if(id==='logger') { buildCatGrid(); initLoggerDate(); fillInvForm(); }
+  if(id==='retirement') { updateRetirement(); }
+  if(id==='mortgage') { renderMortgage(); }
+  if(id==='scenarios') { buildScenarioChart(); updateMazdaCalc(); }
+}
+
+// ============ CAR TOGGLES ============
+function toggleCar(key, btn) {
+  carState[key] = !carState[key];
+  btn.classList.toggle('active');
+  renderAll();
+}
+
+// ============ RENDER ROWS ============
+function renderAll() {
+  renderGroup('fixed-rows', fixedCats, true);
+  renderGroup('variable-rows', varCats, false);
+  renderGroup('other-rows', otherCats, true);
+  updateTotals();
+}
+
+function renderGroup(id, cats, isFixed) {
+  const el = document.getElementById(id);
+  el.innerHTML = '';
+  cats.forEach(cat => {
+    if(cat.tag==='mazda' && !carState.mazda) return;
+    if(cat.tag==='tesla' && !carState.tesla) return;
+    const key = cat.name;
+    const actual = actuals[key] || '';
+    const actualN = parseFloat(actual) || 0;
+    const pct = cat.budget > 0 ? Math.min(actualN/cat.budget*100,100) : 0;
+    const over = actualN > cat.budget && actualN > 0;
+    const delta = cat.budget - actualN;
+    const row = document.createElement('div');
+    row.className = 'budget-row';
+    row.innerHTML = `
+      <div class="budget-cat">
+        <div class="budget-cat-name">${cat.name}</div>
+        <div class="budget-cat-sub">${cat.sub}</div>
+      </div>
+      <div class="budget-budget">$${cat.budget.toLocaleString()}</div>
+      ${isFixed
+        ? `<div class="budget-budget" style="font-size:11px">fixed</div>`
+        : `<div class="budget-actual-wrap">
+            <input class="budget-actual" type="number" placeholder="actual" value="${actual}"
+              oninput="setActual('${key.replace(/'/g,"\\'")}',this.value)">
+           </div>
+           <div class="budget-bar-wrap">
+             <div class="budget-bar-bg">
+               <div class="budget-bar-fill${over?' over':''}" style="width:${pct}%"></div>
+             </div>
+           </div>
+           <div class="budget-delta ${delta>=0?'delta-pos':'delta-neg'}">
+             ${actualN>0?(delta>=0?'-$':'+$')+Math.abs(Math.round(delta)):''}
+           </div>`
+      }`;
+    el.appendChild(row);
+  });
+}
+
+function setActual(key, val) {
+  actuals[key] = val;
+  saveLS();
+  updateTotals();
+}
+
+function updateTotals() {
+  let fixedBudget=0, varBudget=0, otherBudget=0;
+  let varActual=0;
+  const allCats = [...fixedCats,...varCats,...otherCats];
+  allCats.forEach(cat => {
+    if(cat.tag==='mazda'&&!carState.mazda) return;
+    if(cat.tag==='tesla'&&!carState.tesla) return;
+    if(fixedCats.includes(cat)) fixedBudget += cat.budget;
+    else if(varCats.includes(cat)) {
+      varBudget += cat.budget;
+      varActual += parseFloat(actuals[cat.name])||0;
+    } else otherBudget += cat.budget;
+  });
+  const totalBudget = fixedBudget + varBudget + otherBudget;
+  const totalActual = varActual; // only variable has actuals for now
+  const rem = totalBudget - totalActual;
+  document.getElementById('fixed-total-display').textContent = '$'+fixedBudget.toLocaleString();
+  document.getElementById('total-budget').textContent = '$'+totalBudget.toLocaleString();
+  document.getElementById('total-actual').textContent = '$'+Math.round(totalActual).toLocaleString();
+  const remEl = document.getElementById('total-remaining');
+  remEl.textContent = (rem>=0?'$':'-$')+Math.abs(Math.round(rem)).toLocaleString();
+  remEl.style.color = rem>=0 ? 'var(--accent)' : 'var(--danger)';
+  document.getElementById('variable-total-display').textContent =
+    `$${varBudget.toLocaleString()} budget / $${Math.round(varActual).toLocaleString()} actual`;
+  document.getElementById('grand-total-display').textContent = '$'+totalBudget.toLocaleString();
+  const savings = INCOME_BOTH_NET - totalBudget;
+  document.getElementById('savings-val').textContent = '~$'+savings.toLocaleString();
+  document.getElementById('savings-total-display').textContent = '$'+savings.toLocaleString()+'/mo';
+}
+
+// ============ RETIREMENT ENGINE (monthly model, Nov 2026 → Dec 2052) ============
+const ENG = {
+  start: { K_RRSP:275503, K_TFSA:101591, A_RRSP:141000, A_TFSA:44000 },
+  salaryK: 233000, salaryA: 165000,
+  newRoomK: 33810, newRoomA: 29700,     // yearly new RRSP room
+  mortgage: 533446, mortRate: 0.0556, mortPay: 4332,
+  efTarget: 45000, ret: 0.07, hisa: 0.03, infl: 0.025,
+  kLastYear: 2052, aLastYear: 2048,
+};
+const FED=[[0,.14],[58523,.205],[117045,.26],[181440,.29],[258482,.33]];
+const AB =[[0,.08],[61200,.10],[154259,.12],[185111,.13],[246817,.14],[370220,.15]];
+function taxOn(inc,br){ let t=0; for(let i=0;i<br.length;i++){ const lo=br[i][0], hi=i+1<br.length?br[i+1][0]:1e12; if(inc>lo) t+=(Math.min(inc,hi)-lo)*br[i][1]; } return t; }
+function taxSaving(inc,ded){ if(ded<=0) return 0; return taxOn(inc,FED)+taxOn(inc,AB)-taxOn(inc-ded,FED)-taxOn(inc-ded,AB); }
+function ymKey(y,m){ return y+'-'+String(m).padStart(2,'0'); }
+
+function runPlan(S, actuals, opt) {
+  opt = opt || {};
+  const r=ENG.ret/12, h=ENG.hisa/12, mr=ENG.mortRate/12;
+  let KR=ENG.start.K_RRSP, KT=ENG.start.K_TFSA, AR=ENG.start.A_RRSP, AT=ENG.start.A_TFSA, NR=0, EF=0;
+  let bal=ENG.mortgage, interest=0, kRoom=S.k_room, aRoom=S.a_room;
+  const Kc={}, Ac={}, years={}, refunds={}, ev={};
+  let y=2026, m=11;
+  while (y<2052 || (y===2052 && m<=12)) {
+    KR*=1+r; KT*=1+r; AR*=1+r; AT*=1+r; NR*=1+r; EF*=1+h;
+    if (m===1 && y>2026) { if (y<=ENG.kLastYear) kRoom+=ENG.newRoomK; if (y<=ENG.aLastYear) aRoom+=ENG.newRoomA; }
+    const key=ymKey(y,m), act=actuals && actuals[key];
+    const kOn = y<=ENG.kLastYear, aOn = y<=ENG.aLastYear;
+    const c = act ? act : { k_rrsp:kOn?S.k_rrsp:0, a_rrsp:aOn?S.a_rrsp:0, k_tfsa:kOn?S.k_tfsa:0, a_tfsa:aOn?S.a_tfsa:0 };
+    // RRSP capped at available room; anything above goes to that person's TFSA
+    const kr=Math.min(c.k_rrsp, Math.max(kRoom,0)), ar=Math.min(c.a_rrsp, Math.max(aRoom,0));
+    if (!act && c.k_rrsp>kr && !ev.kRoomOut) ev.kRoomOut=[y,m];
+    if (!act && c.a_rrsp>ar && !ev.aRoomOut) ev.aRoomOut=[y,m];
+    if (act && (c.k_rrsp>kr || c.a_rrsp>ar)) ev.overContrib=key;
+    kRoom-=kr; aRoom-=ar;
+    KR+=kr; KT+=c.k_tfsa+(c.k_rrsp-kr); AR+=ar; AT+=c.a_tfsa+(c.a_rrsp-ar);
+    Kc[y]=(Kc[y]||0)+kr; Ac[y]=(Ac[y]||0)+ar;
+    // catch-up = contributing more than the normal yearly room
+    if (!act && !ev.aCatchupEnd && S.a_rrsp*12>ENG.newRoomA && aRoom<=0) ev.aCatchupEnd=[y,m];
+    // mortgage
+    if (bal>0) { const i=bal*mr; interest+=i; bal+=i-ENG.mortPay; if (bal<=0){ NR+=-bal; bal=0; ev.mortPaid=ev.mortPaid||[y,m]; } }
+    else NR += y<=ENG.aLastYear ? ENG.mortPay : 1500;
+    // spring refund for last tax year (2026 contributions claimed with 2027)
+    if (m===4 && y>=2028) {
+      const ty=y-1;
+      const kd=(Kc[ty]||0)+(ty===2027?(Kc[2026]||0):0), ad=(Ac[ty]||0)+(ty===2027?(Ac[2026]||0):0);
+      let R=taxSaving(ENG.salaryK,kd)+taxSaving(ENG.salaryA,ad);
+      refunds[y]=R;
+      if (opt.spendRefunds) R=0;
+      if (EF<ENG.efTarget && R>0) { const t=Math.min(R,ENG.efTarget-EF); EF+=t; R-=t; if (EF>=ENG.efTarget-1) ev.efFull=ev.efFull||[y,m]; }
+      if (bal>0 && R>0) { const t=Math.min(R,bal); bal-=t; R-=t; if (bal<=0) ev.mortPaid=ev.mortPaid||[y,m]; }
+      NR+=R;
+    }
+    if (m===12) years[y]={K_RRSP:KR,K_TFSA:KT,A_RRSP:AR,A_TFSA:AT,NonReg:NR,EF:EF,total:KR+KT+AR+AT+NR};
+    m++; if (m===13){ m=1; y++; }
+  }
+  return { years, refunds, ev, interest, kRoomLeft:kRoom, aRoomLeft:aRoom };
+}
+function todaysMoney(v,yr){ return v/Math.pow(1+ENG.infl, yr+1-2026.83); }
+
+// ============ PLAN STATE (shared via Google Sheet, cached locally) ============
+const PLAN_DEFAULTS = { k_rrsp:3000, a_rrsp:2000, k_tfsa:0, a_tfsa:0, k_room:74654, a_room:121428, mort_bal:533446, mort_asof:'2026-10' };  // Artemii: CRA 2026 deduction limit
+let planS = Object.assign({}, PLAN_DEFAULTS), planTs = 0;
+let invActuals = {};          // { 'YYYY-MM': {k_rrsp,a_rrsp,k_tfsa,a_tfsa} }
+let lastRun = null, lastSpend = null, retChart = null, saveTimer = null;
+const LS_PLAN=LS_PREFIX+'vf_plan_v1', LS_INV=LS_PREFIX+'vf_inv_v1';
+try { const d=JSON.parse(localStorage.getItem(LS_PLAN)||'null'); if(d&&d.s){ planS=Object.assign({},PLAN_DEFAULTS,d.s); planTs=d.ts||0; } } catch(e){}
+try { invActuals=JSON.parse(localStorage.getItem(LS_INV)||'{}')||{}; } catch(e){}
+
+const $m = v => '$'+(v/1e6).toFixed(2)+'M';
+const $n = v => '$'+Math.round(v).toLocaleString();
+const $r = v => '$'+(Math.round(v/100)*100).toLocaleString();
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const ymTxt = a => a ? MON[a[1]-1]+' '+a[0] : null;
+
+function fillPlanInputs() {
+  ['k_rrsp','a_rrsp','k_tfsa','a_tfsa','k_room','a_room'].forEach(k => { const el=document.getElementById('in-'+k); if(el && document.activeElement!==el) el.value=planS[k]; });
+}
+function onPlanInput() {
+  ['k_rrsp','a_rrsp','k_tfsa','a_tfsa','k_room','a_room'].forEach(k => { const v=parseFloat(document.getElementById('in-'+k).value); planS[k]=isNaN(v)?0:Math.max(0,v); });
+  planTs = Date.now();
+  try { localStorage.setItem(LS_PLAN, JSON.stringify({s:planS, ts:planTs})); } catch(e){}
+  renderPlan();
+  clearTimeout(saveTimer);
+  document.getElementById('pl-sync').textContent = 'Saving…';
+  saveTimer = setTimeout(pushPlanSettings, 1500);
+}
+function resetPlanDefaults(){ planS=Object.assign({},PLAN_DEFAULTS); fillPlanInputs(); onPlanInput(); }
+function pushPlanSettings() {
+  fetch(SHEET_ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'settings',settings:Object.assign({ts:planTs},planS)})})
+    .then(()=>{ document.getElementById('pl-sync').textContent='✓ Saved for both of you'; })
+    .catch(()=>{ document.getElementById('pl-sync').textContent='Saved on this device only (offline)'; });
+}
+function loadShared() {
+  fetch(SHEET_ENDPOINT).then(r=>r.json()).then(d=>{
+    if (d && d.settings && (d.settings.ts||0) > planTs) {
+      planS = Object.assign({}, PLAN_DEFAULTS, d.settings); planTs = d.settings.ts||0;
+      try { localStorage.setItem(LS_PLAN, JSON.stringify({s:planS, ts:planTs})); } catch(e){}
+    }
+    if (d && d.investments) { invActuals = Object.assign({}, invActuals, d.investments); try { localStorage.setItem(LS_INV, JSON.stringify(invActuals)); } catch(e){} }
+    fillPlanInputs(); renderPlan(); renderInvList();
+  }).catch(()=>{});
+}
+
+function householdSurplus() {
+  let total=0;
+  [...fixedCats,...varCats,...otherCats].forEach(c=>{ if(c.tag==='mazda'&&!carState.mazda) return; if(c.tag==='tesla'&&!carState.tesla) return; total+=c.budget; });
+  return INCOME_BOTH_NET - total;
+}
+
+function renderPlan() {
+  const S = planS;
+  lastRun = runPlan(S, invActuals);
+  lastSpend = runPlan(S, invActuals, {spendRefunds:true});
+  const Y = lastRun.years, ev = lastRun.ev, R = lastRun.refunds;
+  const inc = y => todaysMoney(Y[y].total,y)*0.035/12;
+  // hero
+  document.getElementById('pl-48').textContent = $m(Y[2048].total);
+  document.getElementById('pl-48s').innerHTML = `≈ <strong>${$m(todaysMoney(Y[2048].total,2048))}</strong> today · ~${$r(inc(2048))}/mo`;
+  document.getElementById('pl-52').textContent = $m(Y[2052].total);
+  document.getElementById('pl-52s').innerHTML = `≈ <strong>${$m(todaysMoney(Y[2052].total,2052))}</strong> today · ~${$r(inc(2052))}/mo`;
+  let goalYear=null; for(let y=2027;y<=2052;y++){ if(inc(y)>=12000){goalYear=y;break;} }
+  document.getElementById('pl-goal').textContent = 'Retire at 65 with $12,000/mo ' + (inc(2052)>=12000?'✅':'⚠️');
+  document.getElementById('pl-goalnote').textContent = goalYear ? `Goal is covered from ~${goalYear}.` : 'Goal not reached by 2052 at these amounts.';
+  // step 1 totals
+  const total = S.k_rrsp+S.a_rrsp+S.k_tfsa+S.a_tfsa+210, surplus = householdSurplus(), left = surplus-total;
+  document.getElementById('pl-total').textContent = $n(total)+'/mo';
+  document.getElementById('pl-surplus-lbl').textContent = `Left over from the ~${$n(surplus)} surplus`;
+  const b = document.getElementById('pl-breath');
+  b.textContent = (left>=0?'~'+$n(left):'−'+$n(-left))+'/mo'; b.style.color = left>=0?'var(--muted)':'var(--danger)';
+  const sub=(id,t)=>{ const e=document.getElementById(id+'-sub'); if(e) e.innerHTML=t; };
+  const kx=S.k_rrsp-ENG.newRoomK/12, ax=S.a_rrsp-ENG.newRoomA/12;
+  sub('in-k_rrsp', kx>0 ? `$2,818 normal + $${Math.round(kx).toLocaleString()} catch-up · refund ~42¢ per $1` : 'within normal yearly room · refund ~42¢ per $1');
+  sub('in-a_rrsp', ax>0 ? `$2,475 normal + $${Math.round(ax).toLocaleString()} catch-up · refund ~37¢ per $1` : 'within normal yearly room · refund ~37¢ per $1');
+  sub('in-k_tfsa','tax-free growth'); sub('in-a_tfsa', S.a_tfsa===0?'paused':'tax-free growth');
+  const w=[];
+  if (left<0) w.push(`<span style="color:var(--danger)">⚠️ That's ${$n(-left)}/mo more than your surplus — trim the budget or lower an amount.</span>`);
+  if (ev.aRoomOut) w.push(`<span style="color:var(--warn)">Artemii's RRSP room runs out ~${ymTxt(ev.aRoomOut)} — then drop him to $2,475/mo (extra goes to his TFSA in the model).</span>`);
+  if (ev.kRoomOut) w.push(`<span style="color:var(--warn)">Kseniya's RRSP room runs out ~${ymTxt(ev.kRoomOut)} — then drop to $2,818/mo.</span>`);
+  if (ev.overContrib) w.push(`<span style="color:var(--danger)">⚠️ Logged RRSP amount in ${ev.overContrib} is over the available room — check CRA (1%/month penalty on excess over $2,000).</span>`);
+  document.getElementById('pl-warn').innerHTML = w.join('<br>');
+  const keys=Object.keys(invActuals).sort();
+  document.getElementById('pl-actuals').textContent = keys.length ? `📈 Using logged actuals for ${keys.length} month(s): ${keys[0]}${keys.length>1?' → '+keys[keys.length-1]:''}.` : 'No actuals logged yet — using the planned amounts for every month.';
+  // step 2 refunds
+  const typical = R[2030]||0, later = R[2040]||0, first = R[2028]||0;
+  document.getElementById('pl-ref-title').textContent = `Every spring — CRA refund ≈ ${$r(typical)}`;
+  document.getElementById('pl-ref-sub').textContent = `Kseniya ~${$r(taxSaving(ENG.salaryK,S.k_rrsp*12))} + Artemii ~${$r(taxSaving(ENG.salaryA,S.a_rrsp*12))}. First one, spring 2028: ~${$r(first)}` + (Math.abs(later-typical)>500 ? ` · later years ~${$r(later)}.` : '.');
+  const rows=[]; const efY=ev.efFull?ev.efFull[0]:null, mY=ev.mortPaid?ev.mortPaid[0]:null;
+  rows.push(`<tr><td class="mono">2028</td><td>🛟 Emergency fund</td><td>~${$r(Math.min(first,ENG.efTarget))} saved</td></tr>`);
+  if (efY && efY>2028) rows.push(`<tr><td class="mono">${efY}</td><td>🛟 Emergency fund → 🏠 mortgage</td><td>Fund full at <strong>$45K</strong></td></tr>`);
+  const base = runPlan(S, invActuals, {spendRefunds:true});
+  const saved = base.interest - lastRun.interest;
+  if (mY) rows.push(`<tr><td class="mono">${(efY||2028)+1}–${String(mY).slice(2)}</td><td>🏠 Mortgage lump sum</td><td><strong>Mortgage gone ${ymTxt(ev.mortPaid)}</strong> (instead of Jan 2042 · ~$${Math.round(saved/1000)}K interest saved)</td></tr>`);
+  else rows.push(`<tr><td class="mono">${(efY||2028)+1}+</td><td>🏠 Mortgage lump sum</td><td>Mortgage still running in 2052</td></tr>`);
+  if (mY) rows.push(`<tr><td class="mono">${mY+1}+</td><td>📈 TFSA / investments</td><td>Plus invest the $4,332/mo you no longer pay on the mortgage</td></tr>`);
+  document.getElementById('pl-ref-rows').innerHTML = rows.join('');
+  // details tables
+  const yr = (y,lab,hl)=>`<tr${hl?' class="highlight"':''}><td><strong>${y}</strong><br><span style="font-size:11px;color:var(--muted)">${lab}</span></td><td class="mono">${$m(Y[y].total)}</td><td class="mono">${$m(todaysMoney(Y[y].total,y))}</td><td class="mono">${$r(inc(y))}</td></tr>`;
+  document.getElementById('pl-years').innerHTML = `<tr><th>Retire</th><th>Pot</th><th>Today's $</th><th>Per mo</th></tr>` + yr(2043,'Both stop at 56 / 60') + (goalYear&&goalYear!==2043&&goalYear!==2048&&goalYear!==2052?yr(goalYear,'Goal first covered'):'') + yr(2048,'Artemii turns 65') + yr(2052,'Kseniya turns 65',true);
+  const ac=(l,k)=>`<tr><td>${l}</td><td class="mono">${$m(Y[2048][k])}</td><td class="mono">${$m(Y[2052][k])}</td></tr>`;
+  document.getElementById('pl-acc').innerHTML = `<tr><th>Account</th><th>2048</th><th>2052</th></tr>`+ac('Kseniya RRSP','K_RRSP')+ac('Kseniya TFSA','K_TFSA')+ac('Artemii RRSP','A_RRSP')+ac('Artemii TFSA','A_TFSA')+ac('Non-registered','NonReg');
+  document.getElementById('pl-assump').innerHTML = `<strong>Assumptions:</strong> 7%/yr return (before Wealthsimple fees, ~0.5%), 2.5% inflation, salaries stay flat (Kseniya $233K, Artemii $165K), mortgage stays at 5.56%, $45K emergency fund in 3% savings. Contributions run until each turns 65. Artemii repays $341/yr of his Home Buyers' Plan from 2027 out of his RRSP contributions (designate it on his tax return). Refunds use 2026 Alberta + federal tax brackets, salary only, no bonus. About two-thirds of the pot is RRSP, which is taxed when withdrawn; TFSA is tax-free. Spending the refunds instead would leave ~${$m(lastSpend.years[2052].total)} in 2052 instead of ${$m(Y[2052].total)}.`;
+  if (retChart) drawRetChart();
+}
+
+function drawRetChart() {
+  if (!lastRun || typeof Chart==='undefined') return;
+  const labels=[], d1=[], d2=[], d3=[];
+  let coast = 562094;
+  for (let y=2026;y<=2052;y++){ coast*=Math.pow(1+ENG.ret/12, y===2026?2:12); labels.push(y); d1.push(Math.round(lastRun.years[y].total/1000)); d2.push(Math.round(lastSpend.years[y].total/1000)); d3.push(Math.round(coast/1000)); }
+  if (retChart) retChart.destroy();
+  retChart = new Chart(document.getElementById('retChart').getContext('2d'),{
+    type:'line', data:{labels, datasets:[
+      {label:'The plan',data:d1,borderColor:'#2d5a3d',backgroundColor:'rgba(45,90,61,.08)',borderWidth:2.5,fill:true,tension:.3,pointRadius:0},
+      {label:'Refunds spent',data:d2,borderColor:'#94a3b8',backgroundColor:'transparent',borderWidth:2,borderDash:[5,4],tension:.3,pointRadius:0},
+      {label:'Stop contributing today',data:d3,borderColor:'#d4d0c8',backgroundColor:'transparent',borderWidth:1.5,tension:.3,pointRadius:0},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,callbacks:{label:c=>` ${c.dataset.label}: $${(c.parsed.y/1000).toFixed(2)}M`}}},
+      scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{callback:v=>'$'+(v/1000)+'M'}}}}
+  });
+}
+function updateRetirement(){ fillPlanInputs(); renderPlan(); }
+
+// ============ INVESTMENT ACTUALS ============
+function curMonth(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+function fillInvForm() {
+  const mEl=document.getElementById('iv-month'); if(!mEl.value) mEl.value=curMonth();
+  const a=invActuals[mEl.value] || {k_rrsp:planS.k_rrsp,a_rrsp:planS.a_rrsp,k_tfsa:planS.k_tfsa,a_tfsa:planS.a_tfsa};
+  ['k_rrsp','a_rrsp','k_tfsa','a_tfsa'].forEach(k=>document.getElementById('iv-'+k).value=a[k]);
+  renderInvList();
+}
+function saveInvestment() {
+  const month=document.getElementById('iv-month').value, st=document.getElementById('iv-status');
+  if(!month){ st.textContent='⚠️ Pick a month'; return; }
+  const rec={}; ['k_rrsp','a_rrsp','k_tfsa','a_tfsa'].forEach(k=>rec[k]=Math.max(0,parseFloat(document.getElementById('iv-'+k).value)||0));
+  invActuals[month]=rec;
+  try { localStorage.setItem(LS_INV, JSON.stringify(invActuals)); } catch(e){}
+  st.textContent='⏳ Saving…'; st.style.color='var(--muted)';
+  fetch(SHEET_ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({type:'investment',month},rec))})
+    .then(()=>{ st.textContent=`✅ Saved ${month} — plan recalculated`; st.style.color='var(--accent)'; })
+    .catch(()=>{ st.textContent='Saved on this device only (offline)'; st.style.color='var(--warn)'; });
+  renderPlan(); renderInvList();
+}
+function renderInvList() {
+  const el=document.getElementById('iv-list'); if(!el) return;
+  const keys=Object.keys(invActuals).sort().reverse();
+  if(!keys.length){ el.innerHTML='<span style="color:var(--muted)">No months logged yet.</span>'; return; }
+  const planned=planS.k_rrsp+planS.a_rrsp+planS.k_tfsa+planS.a_tfsa;
+  el.innerHTML = keys.slice(0,12).map(k=>{ const a=invActuals[k], t=a.k_rrsp+a.a_rrsp+a.k_tfsa+a.a_tfsa, d=t-planned;
+    return `<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)"><span class="mono">${k}</span><span style="font-size:12px;color:var(--muted)">RRSP ${$n(a.k_rrsp)} / ${$n(a.a_rrsp)} · TFSA ${$n(a.k_tfsa)} / ${$n(a.a_tfsa)}</span><span class="mono" style="color:${d>=0?'var(--accent)':'var(--danger)'}">${$n(t)}</span></div>`; }).join('');
+}
+
+// ============ SCENARIOS CHART ============
+let scenChart = null;
+
+function updateMazdaCalc() {
+  const base = PORTFOLIO;
+  const yrs = 12;
+  const keep = proj(base,5000,yrs);
+  const exit = proj(base,5958,yrs); // 5000+958
+  document.getElementById('mazda-keep').textContent = '$'+(keep/1e6).toFixed(2)+'M';
+  document.getElementById('mazda-exit').textContent = '$'+(exit/1e6).toFixed(2)+'M';
+  document.getElementById('mazda-gain').textContent = '+$'+Math.round((exit-keep)/1000)+'K by 2038';
+}
+
+function buildScenarioChart() {
+  updateMazdaCalc();
+  const base = PORTFOLIO;
+  const yrs = [0,2,4,6,8,10,12];
+  const labels = yrs.map(y=>2026+y);
+  const s1 = yrs.map(y=>Math.round(proj(base,10000,y)/1000));
+  const s2 = yrs.map(y=>Math.round(proj(base,7500,y)/1000));
+  const s3 = yrs.map(y=>Math.round(proj(base,5000,y)/1000));
+  const s4 = yrs.map(y=>Math.round(proj(base,3000,y)/1000));
+  if(scenChart) scenChart.destroy();
+  const ctx = document.getElementById('scenarioChart').getContext('2d');
+  scenChart = new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'Best: Exit Mazda + Optimise (~$10K/mo)',data:s1,backgroundColor:'#2d5a3d'},
+      {label:'Good: No Mazda, Tesla kept (~$7.5K/mo)',data:s2,backgroundColor:'#4a7c59'},
+      {label:'Current: Both cars, $5K/mo',data:s3,backgroundColor:'#94a3b8'},
+      {label:'Conservative: $3K/mo',data:s4,backgroundColor:'#d4d0c8'},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:12},padding:14}}},
+      scales:{x:{grid:{display:false}},y:{ticks:{callback:v=>'$'+v+'K'}}}}
+  });
+}
+
+// ============ EXPENSE LOGGER ============
+const SHEET_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwa_vt7NvKsV7ZJUuoGZpOwGR8HLnzr18_6RPaU8BZVh07TVUs9jYPhDQlZ5tXX5BGU/exec';
+
+const LOG_CATS = [
+  {name:'Groceries',icon:'🛒'},
+  {name:'Dining Out',icon:'🍽️'},
+  {name:'Coffee',icon:'☕'},
+  {name:'Amazon',icon:'📦'},
+  {name:'Fashion',icon:'👗'},
+  {name:'Health',icon:'💊'},
+  {name:'Gas',icon:'⛽'},
+  {name:'Pets',icon:'🐾'},
+  {name:'Kids',icon:'🧒'},
+  {name:'Entertainment',icon:'🎬'},
+  {name:'Home',icon:'🏠'},
+  {name:'Nespresso',icon:'☕'},
+  {name:'Cannabis',icon:'🌿'},
+  {name:'Alcohol',icon:'🍷'},
+  {name:'Ukraine',icon:'🇺🇦'},
+  {name:'Transport',icon:'🚗'},
+  {name:'Subscriptions',icon:'📱'},
+  {name:'Gifts',icon:'🎁'},
+  {name:'Car care',icon:'🔧'},
+  {name:'Home repairs',icon:'🛠️'},
+  {name:'Travel',icon:'✈️'},
+  {name:'Utilities',icon:'💡'},
+  {name:'Other',icon:'💳'},
+];
+
+let logWho = 'Kseniya';
+let logCat = '';
+let sessionLog = [];
+
+function setWho(who, btn) {
+  logWho = who;
+  document.getElementById('who-K').classList.toggle('active', who==='Kseniya');
+  document.getElementById('who-A').classList.toggle('active', who==='Artemii');
+}
+
+function buildCatGrid() {
+  const grid = document.getElementById('cat-grid');
+  grid.innerHTML = '';
+  LOG_CATS.forEach(c => {
+    const btn = document.createElement('div');
+    btn.className = 'scenario-btn';
+    btn.id = 'cat-' + c.name;
+    btn.style.cssText = 'text-align:center;padding:10px 6px;font-size:13px';
+    btn.innerHTML = `<div style="font-size:20px;margin-bottom:3px">${c.icon}</div>${c.name}`;
+    btn.onclick = () => {
+      document.querySelectorAll('#cat-grid .scenario-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      logCat = c.name;
+    };
+    grid.appendChild(btn);
+  });
+}
+
+function initLoggerDate() {
+  const d = new Date();
+  const iso = d.toISOString().split('T')[0];
+  document.getElementById('log-date').value = iso;
+}
+
+async function logExpense() {
+  const amount = parseFloat(document.getElementById('log-amount').value);
+  const note = document.getElementById('log-note').value.trim();
+  const date = document.getElementById('log-date').value;
+  const status = document.getElementById('log-status');
+
+  if(!logCat) { status.textContent = '⚠️ Please select a category'; status.style.color='var(--danger)'; return; }
+  if(!amount || amount <= 0) { status.textContent = '⚠️ Please enter an amount'; status.style.color='var(--danger)'; return; }
+
+  const btn = document.getElementById('log-save-btn');
+  btn.textContent = '⏳ Saving...';
+  btn.disabled = true;
+  status.textContent = '';
+
+  const payload = { date, category: logCat, amount, note, who: logWho };
+
+  try {
+    await fetch(SHEET_ENDPOINT, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    // no-cors means we can't read response — assume success
+    status.textContent = `✅ Saved! $${amount.toFixed(2)} · ${logCat} · ${logWho}`;
+    status.style.color = 'var(--accent)';
+
+    // add to session log
+    sessionLog.unshift({ date, category: logCat, amount, note, who: logWho });
+    renderRecentLog();
+
+    // reset form
+    document.getElementById('log-amount').value = '';
+    document.getElementById('log-note').value = '';
+    document.querySelectorAll('#cat-grid .scenario-btn').forEach(b=>b.classList.remove('active'));
+    logCat = '';
+
+    setTimeout(()=>{ status.textContent=''; }, 3000);
+  } catch(e) {
+    status.textContent = '❌ Error — check your connection and try again';
+    status.style.color = 'var(--danger)';
+  }
+
+  btn.textContent = '✅ Save Expense';
+  btn.disabled = false;
+}
+
+function renderRecentLog() {
+  const el = document.getElementById('recent-log');
+  if(!sessionLog.length) { el.textContent = 'Nothing logged yet this session.'; return; }
+  el.innerHTML = sessionLog.slice(0,10).map(e=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div>
+        <span style="font-weight:600">${e.category}</span>
+        <span style="color:var(--muted);margin-left:6px;font-size:12px">${e.note||''}</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <span style="font-size:12px;color:var(--muted)">${e.who} · ${e.date}</span>
+        <span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--accent)">$${parseFloat(e.amount).toFixed(2)}</span>
+      </div>
+    </div>`).join('');
+}
+
+// ============ MORTGAGE TAB ============
+const MG = { price:883756.75, start:574441.89, pay:4332, rate:0.0556, ef:45000, top:46, ground:354 };
+let mgRefunds = false;
+function mgYm(a){ return a ? MON[a[1]-1]+' '+a[0] : '—'; }
+function mgSim(extra, useRef) {
+  const mr = Math.pow(1+MG.rate/2, 1/6) - 1;              // Canadian fixed: semi-annual compounding
+  let b = planS.mort_bal || 533446;
+  let [y, m] = String(planS.mort_asof || '2026-10').split('-').map(Number);
+  const R = (lastRun && lastRun.refunds) || {};
+  let intr = 0, ef = 0, paid = null, half = null, renew = null;
+  const own = {}; own[y] = (MG.price - b) / MG.price;
+  if (MG.price - b >= MG.price/2) half = [y, m];
+  while (b > 0 && y < 2060) {
+    m++; if (m === 13) { m = 1; y++; }
+    const i = b * mr; intr += i; b += i - MG.pay - extra;
+    if (useRef && m === 4 && R[y]) { let r = R[y]; if (ef < MG.ef) { const t = Math.min(r, MG.ef - ef); ef += t; r -= t; } b -= r; }
+    if (b <= 0) { b = 0; paid = [y, m]; }
+    if (!half && MG.price - b >= MG.price/2) half = [y, m];
+    if (y === 2028 && m === 12) renew = b;
+    if (m === 12 || b === 0) own[y] = (MG.price - b) / MG.price;
+  }
+  if (renew === null) renew = 0;
+  return { paid, half, renew, intr, own };
+}
+function setMgScenario(on) {
+  mgRefunds = on;
+  document.getElementById('mg-s-base').classList.toggle('on', !on);
+  document.getElementById('mg-s-ref').classList.toggle('on', on);
+  renderMortgage();
+}
+function onMgBalance() {
+  const v = parseFloat(document.getElementById('mg-bal').value), a = document.getElementById('mg-asof').value;
+  if (!isNaN(v) && v >= 0) planS.mort_bal = v;
+  if (a) planS.mort_asof = a;
+  planTs = Date.now();
+  try { localStorage.setItem(LS_PLAN, JSON.stringify({s:planS, ts:planTs})); } catch(e){}
+  clearTimeout(saveTimer); saveTimer = setTimeout(pushPlanSettings, 1200);
+  renderMortgage();
+}
+function renderMortgage() {
+  if (!lastRun) renderPlan();
+  const extra = parseFloat(document.getElementById('mg-extra').value) || 0;
+  document.getElementById('mg-extra-val').textContent = '$' + extra.toLocaleString();
+  const bal = planS.mort_bal || 533446;
+  const balEl = document.getElementById('mg-bal'); if (document.activeElement !== balEl) balEl.value = Math.round(bal);
+  const asEl = document.getElementById('mg-asof'); if (document.activeElement !== asEl) asEl.value = planS.mort_asof || '2026-10';
+  const s = mgSim(extra, mgRefunds), base = mgSim(0, false);
+  const ownNow = (MG.price - bal) / MG.price;
+  // fill the house
+  const H = MG.ground - MG.top, yFill = MG.ground - ownNow * H;
+  const cr = document.getElementById('mg-clip-rect'); cr.setAttribute('y', yFill); cr.setAttribute('height', MG.ground - yFill);
+  const ll = document.getElementById('mg-level-line'); ll.setAttribute('y1', yFill); ll.setAttribute('y2', yFill);
+  document.getElementById('mg-own').textContent = (ownNow*100).toFixed(1) + '%';
+  document.getElementById('mg-mortgage-paid').textContent = `Mortgage: ${$n(MG.start - bal)} of ${$n(MG.start)} paid (${((MG.start-bal)/MG.start*100).toFixed(1)}%) · ${$n(bal)} left`;
+  // side ruler: now, renewal, a few checkpoints, payoff
+  const startY = Number(String(planS.mort_asof || '2026-10').slice(0,4));
+  const endY = s.paid ? s.paid[0] : 2059;
+  const marks = [{y:startY, f:ownNow, now:true}];
+  const span = endY - startY, step = span > 12 ? 4 : span > 6 ? 3 : 2;
+  for (let y = startY + 2; y < endY; y += step) if (s.own[y] !== undefined) marks.push({y, f:s.own[y]});
+  if (s.paid) marks.push({y:endY, f:1, done:true});
+  // keep labels at least 26 units apart; the payoff mark always wins over its neighbour
+  const kept = [];
+  marks.forEach(k => {
+    const pos = MG.ground - k.f * H;
+    while (kept.length && kept[kept.length-1].pos - pos < 26) { if (k.done && !kept[kept.length-1].now) kept.pop(); else return; }
+    kept.push(Object.assign({pos}, k));
+  });
+  let svg = '';
+  kept.forEach(k => {
+    const pos = k.pos;
+    const col = k.now ? '#2d5a3d' : k.done ? '#c17f2a' : '#6b6960', w = k.now || k.done ? 700 : 500;
+    const label = k.done ? `🔑 ${mgYm(s.paid)}` : k.now ? `Now · ${Math.round(k.f*100)}%` : `${k.y} · ${Math.round(k.f*100)}%`;
+    svg += `<line x1="398" x2="410" y1="${pos}" y2="${pos}" stroke="${col}" stroke-width="2"/><circle cx="404" cy="${pos}" r="${k.now||k.done?4.5:3}" fill="${col}"/><text x="414" y="${pos+5}" fill="${col}" font-weight="${w}">${label}</text>`;
+  });
+  document.getElementById('mg-ruler').innerHTML = svg;
+  // stats
+  document.getElementById('mg-free').textContent = mgYm(s.paid);
+  const monthsEarly = s.paid && base.paid ? (base.paid[0]*12+base.paid[1]) - (s.paid[0]*12+s.paid[1]) : 0;
+  document.getElementById('mg-free-sub').textContent = monthsEarly > 0 ? `${Math.floor(monthsEarly/12)} yr ${monthsEarly%12} mo earlier than today's pace` : `at $${MG.pay.toLocaleString()}/mo`;
+  document.getElementById('mg-half').textContent = mgYm(s.half);
+  document.getElementById('mg-renew').textContent = $n(s.renew);
+  document.getElementById('mg-int').textContent = '$' + Math.round(s.intr/1000).toLocaleString() + 'K';
+  const saved = base.intr - s.intr;
+  document.getElementById('mg-int-sub').textContent = saved > 500 ? `saves ~$${Math.round(saved/1000)}K vs today's pace` : 'from now until it is paid off';
+}
+
+// ============ INIT ============
+renderAll();
+if (IS_PREPROD) {
+  // block writes to the real Google Sheet while testing
+  const _fetch = window.fetch.bind(window);
+  window.fetch = (url, opt) => (String(url).indexOf(SHEET_ENDPOINT)===0 && opt && opt.method==='POST')
+    ? Promise.resolve(new Response('{"status":"test"}')) : _fetch(url, opt);
+  const b = document.createElement('div');
+  b.style.cssText = 'background:#c17f2a;color:#fff;font:600 12px/1.4 system-ui,sans-serif;text-align:center;padding:6px 16px';
+  b.textContent = '🧪 PREPROD · test copy · nothing is saved to the shared Google Sheet';
+  document.body.insertBefore(b, document.body.firstChild);
+}
+fillPlanInputs(); renderPlan(); loadShared();
+const now = new Date();
+document.getElementById('monthLabel').textContent =
+  now.toLocaleString('en-CA',{month:'long',year:'numeric'});
+</script>
+
+<!-- PIN LOCK -->
+<div id="pin-overlay">
+  <div id="pin-box">
+    <h2>🐈 Flerken</h2>
+    <p>Looks like a cat. Holds a universe.<br>Enter PIN to continue</p>
+    <div id="pin-dots">
+      <div class="pin-dot" id="d0"></div>
+      <div class="pin-dot" id="d1"></div>
+      <div class="pin-dot" id="d2"></div>
+      <div class="pin-dot" id="d3"></div>
+    </div>
+    <div id="pin-keys">
+      <div class="pin-key" onclick="pk('1')">1</div>
+      <div class="pin-key" onclick="pk('2')">2</div>
+      <div class="pin-key" onclick="pk('3')">3</div>
+      <div class="pin-key" onclick="pk('4')">4</div>
+      <div class="pin-key" onclick="pk('5')">5</div>
+      <div class="pin-key" onclick="pk('6')">6</div>
+      <div class="pin-key" onclick="pk('7')">7</div>
+      <div class="pin-key" onclick="pk('8')">8</div>
+      <div class="pin-key" onclick="pk('9')">9</div>
+      <div class="pin-key" onclick="pk('back')" style="font-size:14px">⌫</div>
+      <div class="pin-key" onclick="pk('0')">0</div>
+      <div class="pin-key" onclick="pk('clear')" style="font-size:12px">CLR</div>
+    </div>
+    <div id="pin-error"></div>
+  </div>
+</div>
+<script>
+(function(){
+  var CORRECT = '7543';
+  var entered = '';
+  var dots = [document.getElementById('d0'),document.getElementById('d1'),
+               document.getElementById('d2'),document.getElementById('d3')];
+  function refresh(){
+    dots.forEach(function(d,i){ d.classList.toggle('filled', i < entered.length); });
+  }
+  window.pk = function(k){
+    var err = document.getElementById('pin-error');
+    err.textContent = '';
+    if(k==='back'){ entered=entered.slice(0,-1); refresh(); return; }
+    if(k==='clear'){ entered=''; refresh(); return; }
+    if(entered.length>=4) return;
+    entered += k;
+    refresh();
+    if(entered.length===4){
+      if(entered===CORRECT){
+        document.getElementById('pin-overlay').style.display='none';
+      } else {
+        err.textContent = 'Incorrect PIN — try again';
+        setTimeout(function(){ entered=''; refresh(); },800);
+      }
+    }
+  };
+  // also allow keyboard entry
+  document.addEventListener('keydown', function(e){
+    if(!document.getElementById('pin-overlay').style.display || document.getElementById('pin-overlay').style.display!=='none'){
+      if(e.key>='0'&&e.key<='9') pk(e.key);
+      else if(e.key==='Backspace') pk('back');
+      else if(e.key==='Escape') pk('clear');
+    }
+  });
+})();
+</script>
+</body>
+</html>
