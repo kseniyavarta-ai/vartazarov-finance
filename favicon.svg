@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#ffffff"/>
+  <!-- flerken tentacles peeking out below -->
+  <g fill="none" stroke="#d9481f" stroke-width="22" stroke-linecap="round">
+    <path d="M168 400 C 140 440, 96 430, 104 396 C 110 372, 140 380, 132 400"/>
+    <path d="M344 400 C 372 440, 416 430, 408 396 C 402 372, 372 380, 380 400"/>
+  </g>
+  <!-- ears -->
+  <path d="M120 214 L 128 86 Q 132 70 146 80 L 236 150 Z" fill="#e8562a"/>
+  <path d="M392 214 L 384 86 Q 380 70 366 80 L 276 150 Z" fill="#e8562a"/>
+  <path d="M142 184 L 146 112 L 206 158 Z" fill="#ffc9b8"/>
+  <path d="M370 184 L 366 112 L 306 158 Z" fill="#ffc9b8"/>
+  <!-- head -->
+  <ellipse cx="256" cy="268" rx="152" ry="138" fill="#e8562a"/>
+  <!-- forehead stripes -->
+  <g fill="#b8381a">
+    <path d="M256 134 q -12 30 0 62 q 12 -32 0 -62 z"/>
+    <path d="M214 140 q -14 24 -4 52 q 12 -26 4 -52 z"/>
+    <path d="M298 140 q 14 24 4 52 q -12 -26 -4 -52 z"/>
+    <path d="M108 262 q 30 -4 52 10 q -28 8 -52 -10 z"/>
+    <path d="M404 262 q -30 -4 -52 10 q 28 8 52 -10 z"/>
+  </g>
+  <!-- white muzzle -->
+  <ellipse cx="256" cy="320" rx="78" ry="58" fill="#ffffff"/>
+  <!-- eyes -->
+  <ellipse cx="196" cy="252" rx="27" ry="31" fill="#ffffff"/>
+  <ellipse cx="316" cy="252" rx="27" ry="31" fill="#ffffff"/>
+  <ellipse cx="198" cy="256" rx="15" ry="22" fill="#2b2b2b"/>
+  <ellipse cx="314" cy="256" rx="15" ry="22" fill="#2b2b2b"/>
+  <circle cx="204" cy="246" r="6" fill="#ffffff"/>
+  <circle cx="320" cy="246" r="6" fill="#ffffff"/>
+  <!-- nose + mouth -->
+  <path d="M240 298 h32 q 4 0 1 4 l -14 15 q -3 3 -6 0 l -14 -15 q -3 -4 1 -4 z" fill="#f2849a"/>
+  <path d="M256 318 v 12 M256 330 q -14 16 -30 6 M256 330 q 14 16 30 6" fill="none" stroke="#2b2b2b" stroke-width="6" stroke-linecap="round"/>
+  <!-- whiskers -->
+  <g stroke="#2b2b2b" stroke-width="5" stroke-linecap="round">
+    <line x1="176" y1="316" x2="112" y2="304"/><line x1="178" y1="332" x2="114" y2="338"/>
+    <line x1="336" y1="316" x2="400" y2="304"/><line x1="334" y1="332" x2="398" y2="338"/>
+  </g>
+</svg>
