@@ -441,25 +441,41 @@
   .mg-svg { width:100%; height:auto; display:block; }
   .mg-ghost { --h-shake:#e7eae7; --h-trim:#cfd5d0; --h-siding:#f1f3f1; --h-stone:#e2e5e2; --h-bracket:#eceeec; --h-door:#dde1de; --h-glass:#eef1ef; --h-steps:#e9ebe9; --h-roof:#d3d8d4; --h-col:#f1f3f1; --h-line:#d9ddda; --h-light:transparent; }
   .mg-color { --h-shake:#3a3d42; --h-trim:#1d1f22; --h-siding:#f3f1ea; --h-stone:#4b4b4e; --h-bracket:#e7e0d1; --h-door:#3d434a; --h-glass:#a9bcc6; --h-steps:#bdbab3; --h-roof:#2a2c2f; --h-col:#f6f4ee; --h-line:#d8d4ca; --h-light:#ffd36b; }
+  .mg-future { --h-shake:#c99a4a; --h-trim:#8a5a1c; --h-siding:#f7e6bf; --h-stone:#cfa35a; --h-bracket:#f2dfb3; --h-door:#b07a2c; --h-glass:#f4d891; --h-steps:#e7cf9f; --h-roof:#9a6420; --h-col:#fbf0d6; --h-line:#e3c78c; --h-light:#fff3c8; }
+  .mg-legend { display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:var(--muted); margin-top:4px; }
+  .mg-legend i { display:inline-block; width:12px; height:12px; border-radius:3px; vertical-align:-2px; margin-right:5px; }
+  .mg-yr-row { display:flex; align-items:center; gap:10px; margin-top:6px; }
+  #mg-year { flex:1; accent-color:#c17f2a; }
+  .mg-play { border:1.5px solid #c17f2a; background:#fff; color:#c17f2a; border-radius:16px; padding:5px 12px; font:600 13px 'DM Sans',sans-serif; cursor:pointer; white-space:nowrap; }
+  .mg-play.on { background:#c17f2a; color:#fff; }
   .mg-seg { display:inline-flex; background:var(--bg); border:1px solid var(--border); border-radius:20px; padding:3px; gap:3px; flex-wrap:wrap; }
   .mg-seg button { border:0; background:transparent; padding:7px 14px; border-radius:16px; font:500 13px 'DM Sans',sans-serif; color:var(--muted); cursor:pointer; }
   .mg-seg button.on { background:var(--accent); color:#fff; }
   .mg-stat { display:flex; flex-direction:column; gap:2px; }
-  .mg-stats { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
-  @media (min-width:700px){ .mg-stats{ grid-template-columns:repeat(4,minmax(0,1fr)); } }
+  .mg-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+  @media (max-width:420px){ .mg-stats .stat-value{ font-size:18px !important; } }
   #mg-extra { width:100%; accent-color: var(--accent); }
   .mg-level { transition: y .9s ease, height .9s ease; }
+  .mg-card { overflow: visible !important; padding-top: 12px; }
+  .mg-sticky { position: sticky; top: 58px; z-index: 5; background: var(--card); padding-bottom: 6px; border-bottom: 1px solid var(--border); margin: 0 -22px; padding-left: 22px; padding-right: 22px; }
+  .mg-head { display:flex; justify-content:space-between; align-items:baseline; gap:8px; flex-wrap:wrap; font-size:13px; color:var(--muted); }
+  .mg-head strong { color:var(--text); font-size:15px; }
+  .mg-head b { color:var(--accent); font-size:20px; }
+  .mg-svg { max-height: 40vh; }
+  .mg-row { display:flex; align-items:center; gap:10px; margin-top:12px; font-size:13px; }
+  .mg-row > span:first-child { min-width:64px; color:var(--muted); }
+  .mg-row input[type=range] { flex:1; min-width:0; }
+  .mg-row strong { min-width:74px; text-align:right; }
+  @media (max-width:420px){ .mg-sticky{ margin:0 -16px; padding-left:16px; padding-right:16px; } }
   @media (prefers-reduced-motion: reduce){ .mg-level{ transition:none; } }
 </style>
 <div id="tab-mortgage" class="tab-content">
 <div class="main" style="max-width:760px">
 
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px">
-      <div class="card-title" style="margin:0">🏠 152 Harmony Circle</div>
-      <div style="font-size:12px;color:var(--muted)">Filled part = what's already yours</div>
-    </div>
-    <svg class="mg-svg" viewBox="0 0 500 400" role="img" aria-labelledby="mg-svg-title">
+  <div class="card mg-card">
+   <div class="mg-sticky">
+    <div class="mg-head"><strong>🏠 152 Harmony Circle</strong><span><b id="mg-own">—</b> yours · <span id="mg-mortgage-paid"></span></span></div>
+    <svg class="mg-svg" viewBox="0 28 500 340" role="img" aria-labelledby="mg-svg-title">
       <title id="mg-svg-title">Drawing of the house, filled with color up to the share that is paid off</title>
       <defs>
         <symbol id="mg-house" viewBox="0 0 400 400">
@@ -547,44 +563,60 @@
           </g>
         </symbol>
         <clipPath id="mg-clip"><rect id="mg-clip-rect" class="mg-level" x="0" y="354" width="400" height="0"/></clipPath>
+        <clipPath id="mg-clip-f"><rect id="mg-clip-f-rect" class="mg-level" x="0" y="354" width="400" height="0"/></clipPath>
       </defs>
       <!-- ground -->
       <rect x="0" y="354" width="500" height="46" fill="#ece7dc"/>
       <rect x="0" y="354" width="500" height="3" fill="#d9d2c3"/>
       <!-- empty house -->
       <use href="#mg-house" class="mg-ghost" x="0" y="0" width="400" height="400"/>
+      <!-- what-if: part that will be paid off by the chosen year, in gold -->
+      <g clip-path="url(#mg-clip-f)">
+        <use href="#mg-house" class="mg-future" x="0" y="0" width="400" height="400"/>
+      </g>
       <!-- paid-off part in full color -->
       <g clip-path="url(#mg-clip)">
         <use href="#mg-house" class="mg-color" x="0" y="0" width="400" height="400"/>
       </g>
       <!-- fill level line + label -->
       <line id="mg-level-line" class="mg-level" x1="20" x2="380" y1="354" y2="354" stroke="#2d5a3d" stroke-width="2" stroke-dasharray="5 4"/>
+      <line id="mg-f-line" class="mg-level" x1="20" x2="380" y1="354" y2="354" stroke="#c17f2a" stroke-width="2" stroke-dasharray="5 4"/>
+      <text id="mg-f-label" x="40" y="348" font-family="DM Sans, sans-serif" font-size="15" font-weight="700" fill="#8a5a1c" stroke="#fff" stroke-width="4" paint-order="stroke" style="transition:y .9s ease"></text>
       <!-- side ruler -->
       <line x1="404" y1="46" x2="404" y2="354" stroke="#c9c4b8" stroke-width="2"/>
       <g id="mg-ruler" font-family="DM Sans, sans-serif" font-size="14"></g>
     </svg>
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px">
-      <div><span id="mg-own" style="font-size:30px;font-weight:700;color:var(--accent)">—</span> <span style="color:var(--muted);font-size:13px">of the house is yours</span></div>
-      <div style="font-size:13px;color:var(--muted)" id="mg-mortgage-paid"></div>
+    <div class="mg-legend"><span><i style="background:#3a3d42"></i>Yours today</span><span><i style="background:#c99a4a"></i><span id="mg-legend-f">Paid off by then</span></span></div>
+   </div>
+    <div class="mg-seg" role="group" aria-label="Payments from December 2026" style="margin-top:12px">
+      <button id="mg-f-monthly" onclick="setMgFreq('monthly')">Monthly</button>
+      <button id="mg-f-biweekly" onclick="setMgFreq('biweekly')">Bi-weekly</button>
+      <button id="mg-f-accel" onclick="setMgFreq('accel')">Accelerated</button>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-top:4px" id="mg-freq-sub"></div>
+    <div class="mg-seg" role="group" aria-label="Payment scenario" style="margin-top:10px">
+      <button id="mg-s-base" class="on" onclick="setMgScenario(false)">Regular payments</button>
+      <button id="mg-s-ref" onclick="setMgScenario(true)">+ spring refunds</button>
+    </div>
+    <div class="mg-row">
+      <span>Year</span>
+      <input type="range" id="mg-year" min="2027" max="2042" step="1" value="2028" oninput="mgYearTouched=true;stopMgPlay();renderMortgage()" aria-label="Show the house in this year">
+      <strong class="mono" id="mg-year-val">—</strong>
+      <button class="mg-play" id="mg-play" onclick="toggleMgPlay()">▶ Play</button>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-top:4px" id="mg-year-sub"></div>
+    <div class="mg-row">
+      <span>Extra/mo</span>
+      <input type="range" id="mg-extra" min="0" max="866" step="50" value="0" oninput="renderMortgage()" aria-label="Extra payment per month, up to $866 (20% privilege)">
+      <strong class="mono" id="mg-extra-val">$0</strong>
     </div>
   </div>
 
   <div class="card">
-    <div class="card-title">What if…</div>
-    <div class="mg-seg" role="group" aria-label="Payment scenario">
-      <button id="mg-s-base" class="on" onclick="setMgScenario(false)">Today's pace</button>
-      <button id="mg-s-ref" onclick="setMgScenario(true)">+ spring refunds</button>
-    </div>
-    <div style="margin-top:16px">
-      <label for="mg-extra" style="display:flex;justify-content:space-between;font-size:14px"><span>Extra per month</span><strong class="mono" id="mg-extra-val">$0</strong></label>
-      <input type="range" id="mg-extra" min="0" max="866" step="50" value="0" oninput="renderMortgage()">
-      <div style="font-size:11px;color:var(--muted)">Your contract allows raising the payment by up to 20% ($866/mo) each year.</div>
-    </div>
-    <div class="mg-stats" style="margin-top:18px">
+    <div class="mg-stats">
       <div class="mg-stat"><span class="stat-label">Mortgage-free</span><span class="stat-value stat-green" id="mg-free" style="font-size:22px">—</span><span class="stat-sub" id="mg-free-sub"></span></div>
-      <div class="mg-stat"><span class="stat-label">Half the house yours</span><span class="stat-value" id="mg-half" style="font-size:22px">—</span><span class="stat-sub">50% of $883,757</span></div>
-      <div class="mg-stat"><span class="stat-label">At renewal (Dec 2028)</span><span class="stat-value" id="mg-renew" style="font-size:22px">—</span><span class="stat-sub">balance to refinance</span></div>
-      <div class="mg-stat"><span class="stat-label">Interest until mortgage-free</span><span class="stat-value stat-warn" id="mg-int" style="font-size:22px">—</span><span class="stat-sub" id="mg-int-sub"></span></div>
+      <div class="mg-stat"><span class="stat-label">Dec 2028 renewal</span><span class="stat-value" id="mg-renew" style="font-size:22px">—</span><span class="stat-sub">left to refinance</span></div>
+      <div class="mg-stat"><span class="stat-label">Interest left</span><span class="stat-value stat-warn" id="mg-int" style="font-size:22px">—</span><span class="stat-sub" id="mg-int-sub"></span></div>
     </div>
   </div>
 
@@ -594,7 +626,7 @@
       <label style="font-size:13px">Balance from CMLS<br>$<input type="number" id="mg-bal" step="100" style="width:130px" onchange="onMgBalance()"></label>
       <label style="font-size:13px">As of<br><input type="month" id="mg-asof" onchange="onMgBalance()" style="padding:6px;border:1px solid var(--border);border-radius:8px;font-family:inherit"></label>
     </div>
-    <div style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.6">Bought for $883,757 · down payment $309,315 · mortgage at signing $574,442 · 5.56% fixed (compounded semi-annually) · $4,332/mo. Assumes the same rate after the Dec 2028 renewal. "+ spring refunds" uses the refunds from 🎯 The Plan: the first $45K builds the emergency fund, the rest goes to the mortgage each April. "Yours" is based on the purchase price, not today's market value. Your commitment letter's $150,282 "cost of borrowing" covers only the current term; the figure here is all interest until the mortgage is fully paid.</div>
+    <div style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.6">Bought for $883,757 · down payment $309,315 · mortgage at signing $574,442 · 5.56% fixed (compounded semi-annually) · $4,332/mo. Assumes the same rate after the Dec 2028 renewal. Bi-weekly payments start Fri Dec 4, 2026 (change the date with your lender's schedule). "+ spring refunds" uses the refunds from 🎯 The Plan: the first $45K builds the emergency fund, the rest goes to the mortgage each April. "Yours" is based on the purchase price, not today's market value. Your commitment letter's $150,282 "cost of borrowing" covers only the current term; the figure here is all interest until the mortgage is fully paid.</div>
   </details>
 
 </div>
@@ -669,7 +701,7 @@
       </div>
     </div>
     <div class="banner banner-ok" style="margin-top:14px">
-      ✅ <strong>Don't prepay aggressively.</strong> Invest surplus in RRSP/TFSA instead. At renewal (Dec 2028), reassess — if new rate exceeds 6.5%, consider a lump-sum payment. <br><strong>Your plan:</strong> the monthly budget goes to RRSP/TFSA, and only the spring refunds go to the mortgage (after the emergency fund is full) — paid off Apr 2036.
+      ✅ <strong>Don't prepay aggressively.</strong> Invest surplus in RRSP/TFSA instead. At renewal (Dec 2028), reassess — if new rate exceeds 6.5%, consider a lump-sum payment. <br><strong>Your plan:</strong> the monthly budget goes to RRSP/TFSA, and only the spring refunds go to the mortgage (after the emergency fund is full) — paid off <span class="dyn-mort-paid">—</span>.
     </div>
   </div>
 
@@ -694,7 +726,7 @@
       </div>
     </div>
     <div class="banner banner-purple" style="margin-top:14px">
-      🧩 <strong>Priority order:</strong> ① Max both RRSPs — 42% / ~37% instant return. ② TFSA next for tax-free growth + flexibility. ③ Any remainder to WS non-registered. Default plan: $72,000/yr into RRSPs = ~$28,300 back each spring (live numbers in 🎯 The Plan).
+      🧩 <strong>Priority order:</strong> ① Max both RRSPs — 42% / ~37% instant return. ② TFSA next for tax-free growth + flexibility. ③ Any remainder to WS non-registered. Default plan: <span class="dyn-rrsp-yr">—</span>/yr into RRSPs = ~<span class="dyn-refund">—</span> back each spring (live numbers in 🎯 The Plan).
     </div>
   </div>
 
@@ -768,7 +800,7 @@
       <div class="action-num">4</div>
       <div>
         <div class="action-title">Set up auto-invest: RRSP $3,000 each, TFSA $693 Kseniya + $583 Artemii = $7,276/mo</div>
-        <div class="action-desc">$72,000/yr into RRSPs → ~$28,300 refund each spring. Refunds go to the $45K emergency fund first (full April 2029), then to the mortgage. See 🎯 The Plan tab.</div>
+        <div class="action-desc"><span class="dyn-rrsp-yr">—</span>/yr into RRSPs → ~<span class="dyn-refund">—</span> refund each spring. Refunds go to the $45K emergency fund first (full <span class="dyn-ef-full">—</span>), then to the mortgage. See 🎯 The Plan tab.</div>
       </div>
     </div>
     <div class="action-item">
@@ -845,7 +877,7 @@
 <div class="main">
 
   <div class="banner banner-warn">
-    🔥 <strong>Ramsey Mode — optional extras.</strong> Your main plan already kills the mortgage in <strong>Apr 2036</strong> using spring refunds (see 🎯 The Plan). The ideas below would go even faster, but take money from investing.
+    🔥 <strong>Ramsey Mode — optional extras.</strong> Your main plan already kills the mortgage in <strong class="dyn-mort-paid">—</strong> using spring refunds (see 🎯 The Plan). The ideas below would go even faster, but take money from investing.
   </div>
 
   <!-- DEBT SNAPSHOT -->
@@ -1259,6 +1291,26 @@ function taxOn(inc,br){ let t=0; for(let i=0;i<br.length;i++){ const lo=br[i][0]
 function taxSaving(inc,ded){ if(ded<=0) return 0; return taxOn(inc,FED)+taxOn(inc,AB)-taxOn(inc-ded,FED)-taxOn(inc-ded,AB); }
 function ymKey(y,m){ return y+'-'+String(m).padStart(2,'0'); }
 
+// ---- payment frequency (monthly / bi-weekly / accelerated bi-weekly) ----
+const MORT_SWITCH = { y:2026, m:12, first:Date.UTC(2026,11,4) };   // first bi-weekly payment Fri Dec 4 2026
+function mortFreq(){ return (planS && planS.mort_freq) || 'monthly'; }
+function mortBwPay(freq){ return freq === 'accel' ? ENG.mortPay/2 : ENG.mortPay*12/26; }
+function bwCount(y, m) {                     // bi-weekly payment dates falling in this month
+  const a = Date.UTC(y, m-1, 1), b = Date.UTC(y, m, 1), D = 14*86400000, f = MORT_SWITCH.first;
+  if (b <= f) return 0;
+  const k0 = Math.max(0, Math.ceil((a - f)/D)), k1 = Math.ceil((b - f)/D);
+  return Math.max(0, k1 - k0);
+}
+// one month of mortgage: returns [newBalance, interest]; extra = extra per month
+function mortMonth(bal, y, m, extra, freq) {
+  if (freq === 'monthly' || y*12+m < MORT_SWITCH.y*12+MORT_SWITCH.m) {
+    const i = bal*(Math.pow(1+ENG.mortRate/2,1/6)-1); return [bal + i - ENG.mortPay - (extra||0), i];
+  }
+  const br = Math.pow(1+ENG.mortRate/2,1/13)-1, pay = mortBwPay(freq);
+  let intr = 0;
+  for (let n = bwCount(y, m); n > 0 && bal > 0; n--) { const i = bal*br; intr += i; bal += i - pay; }
+  return [bal - (extra||0), intr];
+}
 function runPlan(S, actuals, opt) {
   opt = opt || {};
   const r=ENG.ret/12, h=ENG.hisa/12, mr=Math.pow(1+ENG.mortRate/2,1/6)-1;  // semi-annual compounding
@@ -1283,7 +1335,7 @@ function runPlan(S, actuals, opt) {
     // catch-up = contributing more than the normal yearly room
     if (!act && !ev.aCatchupEnd && S.a_rrsp*12>ENG.newRoomA && aRoom<=0) ev.aCatchupEnd=[y,m];
     // mortgage
-    if (bal>0) { const i=bal*mr; interest+=i; bal+=i-ENG.mortPay; if (bal<=0){ NR+=-bal; bal=0; ev.mortPaid=ev.mortPaid||[y,m]; } }
+    if (bal>0) { const st=mortMonth(bal,y,m,0,S.mort_freq||'monthly'); interest+=st[1]; bal=st[0]; if (bal<=0){ NR+=-bal; bal=0; ev.mortPaid=ev.mortPaid||[y,m]; } }
     else NR += y<=ENG.aLastYear ? ENG.mortPay : 1500;
     // spring refund for last tax year (2026 contributions claimed with 2027)
     if (m===4 && y>=2028) {
@@ -1304,7 +1356,7 @@ function runPlan(S, actuals, opt) {
 function todaysMoney(v,yr){ return v/Math.pow(1+ENG.infl, yr+1-2026.83); }
 
 // ============ PLAN STATE (shared via Google Sheet, cached locally) ============
-const PLAN_DEFAULTS = { k_rrsp:3000, a_rrsp:2000, k_tfsa:0, a_tfsa:0, k_room:74654, a_room:121428, mort_bal:531557.51, mort_asof:'2026-10' };  // Artemii: CRA 2026 deduction limit
+const PLAN_DEFAULTS = { k_rrsp:3000, a_rrsp:2000, k_tfsa:0, a_tfsa:0, k_room:74654, a_room:121428, mort_bal:531557.51, mort_asof:'2026-10', mort_freq:'monthly' };  // Artemii: CRA 2026 deduction limit
 let planS = Object.assign({}, PLAN_DEFAULTS), planTs = 0;
 let invActuals = {};          // { 'YYYY-MM': {k_rrsp,a_rrsp,k_tfsa,a_tfsa} }
 let lastRun = null, lastSpend = null, retChart = null, saveTimer = null;
@@ -1357,6 +1409,13 @@ function renderPlan() {
   const S = planS;
   lastRun = runPlan(S, invActuals);
   lastSpend = runPlan(S, invActuals, {spendRefunds:true});
+  (function(){
+    const ev0 = lastRun.ev, R0 = lastRun.refunds, ym = a => a ? MON[a[1]-1]+' '+a[0] : 'after 2052';
+    const set = (c, t) => document.querySelectorAll('.'+c).forEach(e => e.textContent = t);
+    set('dyn-mort-paid', ym(ev0.mortPaid)); set('dyn-ef-full', ym(ev0.efFull));
+    set('dyn-rrsp-yr', '$' + ((S.k_rrsp + S.a_rrsp)*12).toLocaleString());
+    set('dyn-refund', '$' + (Math.round((R0[2030]||0)/100)*100).toLocaleString());
+  })();
   const Y = lastRun.years, ev = lastRun.ev, R = lastRun.refunds;
   const inc = y => todaysMoney(Y[y].total,y)*0.035/12;
   // hero
@@ -1622,9 +1681,10 @@ function renderRecentLog() {
 
 // ============ MORTGAGE TAB ============
 const MG = { price:883756.75, start:574441.89, pay:4332, rate:0.0556, ef:45000, top:46, ground:354 };
-let mgRefunds = false;
+let mgRefunds = false, mgYearTouched = false, mgPlayTimer = null;
 function mgYm(a){ return a ? MON[a[1]-1]+' '+a[0] : '—'; }
-function mgSim(extra, useRef) {
+function mgSim(extra, useRef, freq) {
+  freq = freq || mortFreq();
   const mr = Math.pow(1+MG.rate/2, 1/6) - 1;              // Canadian fixed: semi-annual compounding
   let b = planS.mort_bal || 531557.51;
   let [y, m] = String(planS.mort_asof || '2026-10').split('-').map(Number);
@@ -1634,7 +1694,8 @@ function mgSim(extra, useRef) {
   if (MG.price - b >= MG.price/2) half = [y, m];
   while (b > 0 && y < 2060) {
     m++; if (m === 13) { m = 1; y++; }
-    const i = b * mr; intr += i; b += i - MG.pay - extra;
+    const st = mortMonth(b, y, m, extra, freq); intr += st[1]; b = st[0];
+    ef *= 1 + ENG.hisa/12;
     if (useRef && m === 4 && R[y]) { let r = R[y]; if (ef < MG.ef) { const t = Math.min(r, MG.ef - ef); ef += t; r -= t; } b -= r; }
     if (b <= 0) { b = 0; paid = [y, m]; }
     if (!half && MG.price - b >= MG.price/2) half = [y, m];
@@ -1643,6 +1704,27 @@ function mgSim(extra, useRef) {
   }
   if (renew === null) renew = 0;
   return { paid, half, renew, intr, own };
+}
+function stopMgPlay() {
+  if (mgPlayTimer) { clearInterval(mgPlayTimer); mgPlayTimer = null; }
+  const b = document.getElementById('mg-play'); b.classList.remove('on'); b.textContent = '▶ Play';
+}
+function toggleMgPlay() {
+  if (mgPlayTimer) { stopMgPlay(); return; }
+  const el = document.getElementById('mg-year'), b = document.getElementById('mg-play');
+  mgYearTouched = true;
+  el.value = el.min; renderMortgage();
+  b.classList.add('on'); b.textContent = '⏸ Pause';
+  mgPlayTimer = setInterval(() => {
+    if (Number(el.value) >= Number(el.max)) { stopMgPlay(); return; }
+    el.value = Number(el.value) + 1; renderMortgage();
+  }, 900);
+}
+function setMgFreq(f) {
+  planS.mort_freq = f; planTs = Date.now();
+  try { localStorage.setItem(LS_PLAN, JSON.stringify({s:planS, ts:planTs})); } catch(e){}
+  clearTimeout(saveTimer); saveTimer = setTimeout(pushPlanSettings, 1200);
+  renderPlan(); renderMortgage();
 }
 function setMgScenario(on) {
   mgRefunds = on;
@@ -1666,14 +1748,41 @@ function renderMortgage() {
   const bal = planS.mort_bal || 531557.51;
   const balEl = document.getElementById('mg-bal'); if (document.activeElement !== balEl) balEl.value = Math.round(bal);
   const asEl = document.getElementById('mg-asof'); if (document.activeElement !== asEl) asEl.value = planS.mort_asof || '2026-10';
-  const s = mgSim(extra, mgRefunds), base = mgSim(0, false);
+  const s = mgSim(extra, mgRefunds), base = mgSim(0, false, 'monthly');
+  ['monthly','biweekly','accel'].forEach(f => document.getElementById('mg-f-'+f).classList.toggle('on', mortFreq()===f));
+  const fq = mortFreq();
+  document.getElementById('mg-freq-sub').textContent = fq==='monthly' ? `$${MG.pay.toLocaleString()} once a month (switch applies from Dec 2026).` : fq==='biweekly' ? `${$n(mortBwPay(fq))} every 2 weeks from Dec 4 — same total per year.` : `${$n(mortBwPay(fq))} every 2 weeks from Dec 4 — adds one extra payment a year.`;
   const ownNow = (MG.price - bal) / MG.price;
   // fill the house
   const H = MG.ground - MG.top, yFill = MG.ground - ownNow * H;
   const cr = document.getElementById('mg-clip-rect'); cr.setAttribute('y', yFill); cr.setAttribute('height', MG.ground - yFill);
   const ll = document.getElementById('mg-level-line'); ll.setAttribute('y1', yFill); ll.setAttribute('y2', yFill);
   document.getElementById('mg-own').textContent = (ownNow*100).toFixed(1) + '%';
-  document.getElementById('mg-mortgage-paid').textContent = `Mortgage: ${$n(MG.start - bal)} of ${$n(MG.start)} paid (${((MG.start-bal)/MG.start*100).toFixed(1)}%) · ${$n(bal)} left`;
+  document.getElementById('mg-mortgage-paid').textContent = `${$n(bal)} left`;
+  // what-if: gold fill up to where this scenario gets you by the chosen year
+  const y0 = Number(String(planS.mort_asof || '2026-10').slice(0,4));
+  const yMax = s.paid ? s.paid[0] : 2059;
+  const yr = document.getElementById('mg-year');
+  yr.min = y0 + 1; yr.max = Math.max(y0 + 1, yMax);
+  if (!mgYearTouched) yr.value = Math.min(2028, yMax);      // default: renewal year
+  let fy = Math.min(Math.max(Number(yr.value), y0 + 1), yMax); yr.value = fy;
+  const done = s.paid && fy >= s.paid[0];
+  const ownF = done ? 1 : (s.own[fy] !== undefined ? s.own[fy] : ownNow);
+  const yF = MG.ground - ownF * H;
+  const fr = document.getElementById('mg-clip-f-rect'); fr.setAttribute('y', yF); fr.setAttribute('height', Math.max(0, yFill - yF));
+  const fl = document.getElementById('mg-f-line'); fl.setAttribute('y1', yF); fl.setAttribute('y2', yF);
+  const whenTxt = done ? mgYm(s.paid) : 'Dec ' + fy;
+  const fLab = document.getElementById('mg-f-label');
+  fLab.setAttribute('y', Math.max(MG.top + 16, yF - 6));
+  fLab.textContent = done ? `🔑 All yours · ${whenTxt}` : `${whenTxt} · ${Math.round(ownF*100)}%`;
+  document.getElementById('mg-year-val').textContent = whenTxt;
+  document.getElementById('mg-legend-f').textContent = `Paid off by ${whenTxt}`;
+  const balF = Math.max(0, MG.price * (1 - ownF));
+  const baseF = base.paid && fy >= base.paid[0] ? 1 : (base.own[fy] !== undefined ? base.own[fy] : ownNow);
+  const diff = (ownF - baseF) * MG.price;
+  document.getElementById('mg-year-sub').textContent = done
+    ? `Mortgage fully paid in ${mgYm(s.paid)}.`
+    : `${Math.round(ownF*100)}% yours · ${$n(balF)} left${diff > 500 ? ` · ${$n(diff)} more paid off than monthly, no extras` : ''}`;
   // side ruler: now, renewal, a few checkpoints, payoff
   const startY = Number(String(planS.mort_asof || '2026-10').slice(0,4));
   const endY = s.paid ? s.paid[0] : 2059;
@@ -1699,12 +1808,11 @@ function renderMortgage() {
   // stats
   document.getElementById('mg-free').textContent = mgYm(s.paid);
   const monthsEarly = s.paid && base.paid ? (base.paid[0]*12+base.paid[1]) - (s.paid[0]*12+s.paid[1]) : 0;
-  document.getElementById('mg-free-sub').textContent = monthsEarly > 0 ? `${Math.floor(monthsEarly/12)} yr ${monthsEarly%12} mo earlier than today's pace` : `at $${MG.pay.toLocaleString()}/mo`;
-  document.getElementById('mg-half').textContent = mgYm(s.half);
+  document.getElementById('mg-free-sub').textContent = monthsEarly > 0 ? `${Math.floor(monthsEarly/12)} yr ${monthsEarly%12} mo earlier than monthly, no extras` : (fq==='monthly' ? `at $${MG.pay.toLocaleString()}/mo` : 'same as monthly');
   document.getElementById('mg-renew').textContent = $n(s.renew);
   document.getElementById('mg-int').textContent = '$' + Math.round(s.intr/1000).toLocaleString() + 'K';
   const saved = base.intr - s.intr;
-  document.getElementById('mg-int-sub').textContent = saved > 500 ? `saves ~$${Math.round(saved/1000)}K vs today's pace` : 'all remaining interest, not just this term';
+  document.getElementById('mg-int-sub').textContent = saved > 500 ? `saves ~$${Math.round(saved/1000)}K vs monthly, no extras` : 'until mortgage-free';
 }
 
 // ============ INIT ============
@@ -1730,7 +1838,7 @@ document.getElementById('monthLabel').textContent =
   <div id="pin-box">
     <h2>🐈 Flerken</h2>
     <p>Looks like a cat. Holds a universe.<br>Enter PIN to continue</p>
-    <div id="flerken-version" style="font-size:10px;color:#9ca3af;margin-top:-14px;margin-bottom:14px;font-family:monospace">v2026.10.21 · cat-icon</div>
+    <div id="flerken-version" style="font-size:10px;color:#9ca3af;margin-top:-14px;margin-bottom:14px;font-family:monospace">v2026.10.31 · biweekly</div>
     <div id="pin-dots">
       <div class="pin-dot" id="d0"></div>
       <div class="pin-dot" id="d1"></div>
